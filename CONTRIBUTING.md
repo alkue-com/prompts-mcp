@@ -24,7 +24,7 @@ Run all the tasks below (install, format, lint, check, test) at once:
 
 ### Tasks
 
-Install development and test dependencies:
+Install dependencies:
 
     python dev.py install
 
