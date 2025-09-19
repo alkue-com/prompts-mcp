@@ -23,7 +23,7 @@ prompts_dir_env = os.getenv("PROMPTS_DIR")
 if prompts_dir_env:
     PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
 else:
-    PROMPTS_DIR = Path(__file__).parent / "prompts"
+    PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
 # Create the FastMCP server
 app = FastMCP("prompts-mcp")
@@ -67,7 +67,7 @@ def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
 
 
 def load_all_prompts():
-    """Load all prompts from the prompts directory and store them for the prompt handler."""
+    """Load all prompts from the prompts directory and register them individually."""
     if not PROMPTS_DIR.exists():
         logger.warning(f"Prompts directory does not exist: {PROMPTS_DIR}")
         return
@@ -80,9 +80,8 @@ def load_all_prompts():
         try:
             prompt_data = load_prompt_file(prompt_file)
 
-            # Store the prompt content for retrieval
-            setattr(app, f"_prompt_content_{prompt_data['name']}", prompt_data["content"])
-            setattr(app, f"_prompt_data_{prompt_data['name']}", prompt_data)
+            # Register each prompt individually with FastMCP
+            register_prompt(prompt_data)
             prompt_count += 1
 
         except Exception as e:
@@ -91,22 +90,25 @@ def load_all_prompts():
     logger.info(f"Loaded {prompt_count} prompts from {PROMPTS_DIR}")
 
 
-# Custom prompt handler using the @app.prompt decorator
-@app.prompt()
-async def handle_prompt(name: str, arguments: Optional[Dict[str, Any]] = None) -> str:
-    """Handle prompt requests."""
-    # Get the stored prompt content
-    content_attr = f"_prompt_content_{name}"
-    if not hasattr(app, content_attr):
-        raise ValueError(f"Prompt '{name}' not found")
+def register_prompt(prompt_data: Dict[str, Any]):
+    """Register an individual prompt with FastMCP."""
+    prompt_name = prompt_data["name"]
+    prompt_content = prompt_data["content"]
+    prompt_description = prompt_data["description"]
 
-    content = getattr(app, content_attr)
+    # Create a prompt handler function for this specific prompt
+    def create_prompt_handler(content: str, name: str, description: str):
+        @app.prompt(name=name, description=description)
+        async def prompt_handler(arguments: Optional[Dict[str, Any]] = None) -> str:
+            result = content
+            # Add input if provided
+            if arguments and "input" in arguments and arguments["input"]:
+                result += f"\n\n{arguments['input']}"
+            return result
+        return prompt_handler
 
-    # Add input if provided
-    if arguments and "input" in arguments and arguments["input"]:
-        content += f"\n\n{arguments['input']}"
-
-    return content
+    # Register the prompt
+    create_prompt_handler(prompt_content, prompt_name, prompt_description)
 
 
 def main():
