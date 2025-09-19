@@ -27,7 +27,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  uv sync --extra dev --extra test --no-managed-python
+                  uv sync --extra dev --extra test
 
             - name: Run linting
               run: |

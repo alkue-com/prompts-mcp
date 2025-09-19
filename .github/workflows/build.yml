@@ -27,4 +27,4 @@ jobs:
 
             - name: Build package
               run: |
-                  uv build --no-managed-python
+                  uv build
