@@ -2,7 +2,9 @@
 
 Model Context Protocol (MCP) server of Markdown based prompts.
 
-Serves prompts for any MCP-compatible client from a directory of Markdown files.
+Serves a directory of Markdown files as prompts to a chat session.
+
+Works with any MCP client supporting server-side prompts.
 
 ## Usage
 
