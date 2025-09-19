@@ -24,7 +24,7 @@ Works with any MCP client supporting server-side prompts.
 }
 ```
 
-The location of the `mcp.json` file depends on your operating system and client.
+The location of the `mcp.json` file depends on your client and operating system.
 
 ### Configuration
 
