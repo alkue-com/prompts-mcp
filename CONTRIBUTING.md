@@ -6,13 +6,18 @@ Install dependencies:
 
     uv sync
 
-Set the PROMPTS_DIR environment variable:
+Set the `PROMPTS_DIR` environment variable:
 
     export PROMPTS_DIR="/path/to/your/prompts"
 
 Run the server:
 
     uv run prompts-mcp
+
+Use [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
+
+    npx -y @modelcontextprotocol/inspector \
+        uv --directory /this/path run prompts-mcp
 
 ## Development
 
@@ -45,21 +50,3 @@ Clean build artifacts and cache files:
 Run all checks (install-dev, format, lint, check, test):
 
     python dev.py all
-
-### Running tests
-
-Run all tests:
-
-    uv run pytest
-
-Run unit tests only:
-
-    uv run pytest -m unit
-
-Run integration tests only:
-
-    uv run pytest -m integration
-
-Run performance tests only:
-
-    uv run pytest -m slow

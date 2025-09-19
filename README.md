@@ -37,4 +37,4 @@ or if the directory doesn't exist.
 
 ## Development
 
-See `CONTRIBUTING.md` for that.
+See `CONTRIBUTING.md` for local setup.
