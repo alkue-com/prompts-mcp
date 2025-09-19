@@ -8,7 +8,7 @@ Works with any MCP client supporting server-side prompts.
 
 ## Usage
 
-**Configure your client** (e.g. Claude Desktop) by adding to your `mcp json`:
+**Configure your client** (e.g. Claude Desktop) by adding to your `mcp.json`:
 
 ```json
 {
@@ -24,18 +24,18 @@ Works with any MCP client supporting server-side prompts.
 }
 ```
 
-The exact location of the `mcp.json` configuration file depends on your client.
+The location of the `mcp.json` file depends on your operating system and client.
 
 ### Configuration
 
 The `PROMPTS_DIR` environment variable is **required** and must be set to
-a path containing all your `.md` files you want to serve as prompts.
+a path containing the `.md` files you want to serve as prompts.
 
-Prompt naming: `_`'s in file name are converted to spaces and `.md` is dropped.
+The server will exit with an error if `PROMPTS_DIR` is not set or if the
+directory does not exist.
 
-The server will exit with an error if `PROMPTS_DIR` is not set
-or if the directory doesn't exist.
+Prompt naming: `_`'s in file names are converted to spaces and `.md` is dropped.
 
 ## Development
 
-Roughly 100% coded by AI. See `CONTRIBUTING.md` for local setup.
+About 100% coded by AI. See `CONTRIBUTING.md` for local setup.
