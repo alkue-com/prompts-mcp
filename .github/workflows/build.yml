@@ -22,8 +22,9 @@ jobs:
                   version: "latest"
 
             - name: Set up Python ${{ matrix.python-version }}
-              run: uv python install ${{ matrix.python-version }}
+              run: |
+                  uv python install ${{ matrix.python-version }}
 
             - name: Build package
               run: |
-                  uv build
+                  uv build --no-managed-python

@@ -22,11 +22,12 @@ jobs:
                   version: "latest"
 
             - name: Set up Python ${{ matrix.python-version }}
-              run: uv python install ${{ matrix.python-version }}
+              run: |
+                  uv python install ${{ matrix.python-version }}
 
             - name: Install dependencies
               run: |
-                  uv sync --extra dev --extra test
+                  uv sync --extra dev --extra test --no-managed-python
 
             - name: Run linting
               run: |
