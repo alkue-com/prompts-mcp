@@ -31,7 +31,7 @@ The location of the `mcp.json` file depends on your operating system and client.
 Set `PROMPTS_DIR` to a path containing the `.md` files you want to serve as
 prompts.
 
-**Note**: The server will exit with an error if `PROMPTS_DIR` is not set
+⚠️: The server will exit with an error if `PROMPTS_DIR` is not set
 or if the directory does not exist.
 
 Prompt naming: `_`'s in file names are converted to spaces and `.md` is dropped.
