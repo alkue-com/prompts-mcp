@@ -7,6 +7,7 @@ making them accessible to any MCP-compatible client.
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -17,7 +18,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("prompts-mcp")
 
 # Directory containing prompts
-PROMPTS_DIR = Path(__file__).parent / "prompts"
+# Can be overridden with PROMPTS_DIR environment variable
+prompts_dir_env = os.getenv("PROMPTS_DIR")
+if prompts_dir_env:
+    PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
+else:
+    PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 # Create the FastMCP server
 app = FastMCP("prompts-mcp")
@@ -106,6 +112,7 @@ async def handle_prompt(name: str, arguments: Optional[Dict[str, Any]] = None) -
 def main():
     """Main entry point for the MCP server."""
     logger.info("Starting prompts-mcp server with FastMCP")
+    logger.info(f"Using prompts directory: {PROMPTS_DIR}")
 
     # Load all prompts
     load_all_prompts()
