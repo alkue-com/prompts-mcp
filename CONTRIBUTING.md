@@ -1,5 +1,14 @@
 # Contributing
 
+You can use your favorite Python version manager (asdf, pyenv, ...) as long
+as it follows `.python-version`.
+
+Install [pre-commit](https://pre-commit.com/) if it is not already installed.
+
+Install pre-commit hooks in your git working copy:
+
+    pre-commit install --hook-type pre-commit --hook-type commit-msg
+
 ## Setup
 
 Install dependencies:
@@ -14,10 +23,6 @@ Run the server:
 
     uv run prompts-mcp
 
-Use [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
-
-    npx -y @modelcontextprotocol/inspector \
-        uv --directory /this/path run prompts-mcp
 
 ## Development
 
@@ -47,6 +52,33 @@ Clean build artifacts and cache files:
 
     python dev.py clean
 
+## Testing
+
 Run all checks (install-dev, format, lint, check, test):
 
     python dev.py all
+
+Use [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
+
+    npx -y @modelcontextprotocol/inspector \
+        uv --directory "$PWD" run prompts-mcp
+
+Test in e.g. [Goose CLI](https://block.github.io/goose/docs/quickstart) (fast):
+
+    goose session --with-extension "uvx --from "$PWD" prompts-mcp"
+
+Test in e.g. [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) `mcp.json` (slower):
+
+```json
+{
+  "mcpServers": {
+    "prompts-mcp": {
+      "command": "uvx",
+      "args": ["prompts-mcp"],
+      "env": {
+        "PROMPTS_DIR": "/path/to/your/prompts"
+      }
+    }
+  }
+}
+```
