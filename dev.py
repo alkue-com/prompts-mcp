@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Development script - alternative to Makefile"""
+"""Script for common development tasks - alternative to Makefile"""
 
 import os
 import shutil

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Release script for building distributions andpublishing to PyPI.
+"""Release script for building dists and publishing them to PyPI.
 
-Logic for getting uv to read credentials from .pypirc by @bulletmark.
-From: https://github.com/bulletmark/uv-publish/blob/main/uv_publish.py
-
+Logic for getting uv publish to read credentials from ~/.pypirc by bulletmark.
+See: https://github.com/bulletmark/uv-publish/blob/main/uv_publish.py
 """
 
 import os
