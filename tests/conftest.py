@@ -71,19 +71,19 @@ def sample_prompt_data():
         "name": "test_prompt",
         "title": "Test Prompt",
         "description": "A test prompt for unit testing",
-        "content": "# Test Prompt\n\nThis is a test prompt content."
+        "content": "# Test Prompt\n\nThis is a test prompt content.",
     }
 
 
 @pytest.fixture
 def mock_signal():
     """Mock signal handling for testing."""
-    with patch('signal.signal') as mock_signal_func:
+    with patch("signal.signal") as mock_signal_func:
         yield mock_signal_func
 
 
 @pytest.fixture
 def mock_logger():
     """Mock logger for testing."""
-    with patch('prompts_mcp.main.logger') as mock_log:
+    with patch("prompts_mcp.main.logger") as mock_log:
         yield mock_log

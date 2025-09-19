@@ -19,6 +19,7 @@ class TestPerformance:
 
         # Measure time for multiple loads
         from prompts_mcp.main import load_prompt_file
+
         start_time = time.time()
         for _ in range(100):
             load_prompt_file(prompt_file)
@@ -34,9 +35,10 @@ class TestPerformance:
             prompt_file = temp_prompts_dir / f"prompt_{i}.md"
             prompt_file.write_text(f"# Prompt {i}\n\nContent for prompt {i}.")
 
-        with patch('prompts_mcp.main.PROMPTS_DIR', temp_prompts_dir):
-            with patch('prompts_mcp.main.register_prompt'):
+        with patch("prompts_mcp.main.PROMPTS_DIR", temp_prompts_dir):
+            with patch("prompts_mcp.main.register_prompt"):
                 from prompts_mcp.main import load_all_prompts
+
                 start_time = time.time()
                 load_all_prompts()
                 end_time = time.time()
@@ -59,6 +61,7 @@ class TestPerformance:
 
             # Load the large file
             from prompts_mcp.main import load_prompt_file
+
             result = load_prompt_file(large_file)
 
             # Verify content is loaded correctly
@@ -69,17 +72,19 @@ class TestPerformance:
     def test_concurrent_prompt_loading(self, temp_prompts_dir):
         """Test concurrent loading of multiple prompt files."""
         import concurrent.futures
-        import threading
 
         # Create multiple prompt files
         prompt_files = []
         for i in range(20):
             prompt_file = temp_prompts_dir / f"concurrent_prompt_{i}.md"
-            prompt_file.write_text(f"# Concurrent Prompt {i}\n\nContent for concurrent prompt {i}.")
+            prompt_file.write_text(
+                f"# Concurrent Prompt {i}\n\nContent for concurrent prompt {i}."
+            )
             prompt_files.append(prompt_file)
 
         def load_single_prompt(prompt_file):
             from prompts_mcp.main import load_prompt_file
+
             return load_prompt_file(prompt_file)
 
         # Load prompts concurrently

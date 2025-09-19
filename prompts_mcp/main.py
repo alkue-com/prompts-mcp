@@ -11,7 +11,7 @@ import os
 import signal
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -52,7 +52,7 @@ def initialize_server():
     app = FastMCP("prompts-mcp")
 
 
-def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
+def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
     """Load and parse a prompt file."""
     content = prompt_path.read_text(encoding="utf-8")
 
@@ -109,7 +109,7 @@ def load_all_prompts():
     logger.info(f"Loaded {prompt_count} prompts from {PROMPTS_DIR}")
 
 
-def register_prompt(prompt_data: Dict[str, Any]):
+def register_prompt(prompt_data: dict[str, Any]):
     """Register an individual prompt with FastMCP."""
     prompt_name = prompt_data["name"]
     prompt_content = prompt_data["content"]
@@ -119,7 +119,7 @@ def register_prompt(prompt_data: Dict[str, Any]):
     def create_prompt_handler(content: str, name: str, description: str):
         @app.prompt(name=name, description=description)
         async def prompt_handler(
-            arguments: Optional[Dict[str, Any]] = None,
+            arguments: dict[str, Any] | None = None,
         ) -> str:
             result = content
             # Add input if provided

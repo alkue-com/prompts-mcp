@@ -22,8 +22,14 @@ class TestIntegration:
 
             # Create multiple prompt files
             prompt_files = [
-                ("system_prompt.md", "# System Prompt\n\n# IDENTITY AND PURPOSE\nThis is a system prompt for testing."),
-                ("user_prompt.md", "# User Prompt\n\n# IDENTITY AND PURPOSE\nThis is a user prompt for testing."),
+                (
+                    "system_prompt.md",
+                    "# System Prompt\n\n# IDENTITY AND PURPOSE\nThis is a system prompt for testing.",
+                ),
+                (
+                    "user_prompt.md",
+                    "# User Prompt\n\n# IDENTITY AND PURPOSE\nThis is a user prompt for testing.",
+                ),
                 ("README.md", "# README\n\nThis should be ignored."),
             ]
 
@@ -32,10 +38,11 @@ class TestIntegration:
 
             # Mock the environment and PROMPTS_DIR
             with patch.dict(os.environ, {"PROMPTS_DIR": str(prompts_dir)}):
-                with patch('prompts_mcp.main.PROMPTS_DIR', prompts_dir):
-                    with patch('prompts_mcp.main.register_prompt') as mock_register:
+                with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
+                    with patch("prompts_mcp.main.register_prompt") as mock_register:
                         # Test loading all prompts
                         from prompts_mcp.main import load_all_prompts
+
                         load_all_prompts()
 
                         # Should register 2 prompts (excluding README.md)
@@ -70,13 +77,13 @@ Use this prompt for testing purposes.
 Here are some examples.
 """,
                     "expected_title": "Standard Prompt",
-                    "expected_description": "This is a standard prompt with proper formatting."
+                    "expected_description": "This is a standard prompt with proper formatting.",
                 },
                 {
                     "filename": "minimal_prompt.md",
                     "content": "Just a simple prompt without any sections.",
                     "expected_title": "Minimal Prompt",
-                        "expected_description": "Just a simple prompt without any sections...."
+                    "expected_description": "Just a simple prompt without any sections....",
                 },
                 {
                     "filename": "complex_formatting.md",
@@ -91,7 +98,7 @@ and various content.
 Usage instructions here.
 """,
                     "expected_title": "Complex Formatting",
-                    "expected_description": "This prompt has complex formatting with multiple lines and various content."
+                    "expected_description": "This prompt has complex formatting with multiple lines and various content.",
                 },
                 {
                     "filename": "prompt_with_special_chars.md",
@@ -104,8 +111,8 @@ This prompt contains special characters: @#$%^&*()_+-=[]{}|;':\",./<>?
 Use carefully.
 """,
                     "expected_title": "Prompt With Special Chars",
-                    "expected_description": "This prompt contains special characters: @#$%^&*()_+-=[]{}|;':\",./<>?"
-                }
+                    "expected_description": "This prompt contains special characters: @#$%^&*()_+-=[]{}|;':\",./<>?",
+                },
             ]
 
             for test_case in test_cases:
@@ -113,6 +120,7 @@ Use carefully.
                 prompt_file.write_text(test_case["content"])
 
                 from prompts_mcp.main import load_prompt_file
+
                 result = load_prompt_file(prompt_file)
 
                 assert result["name"] == test_case["filename"].replace(".md", "")
@@ -142,11 +150,12 @@ Use carefully.
                     raise PermissionError("Cannot read file")
                 return original_read_text(self, encoding)
 
-            with patch.object(Path, 'read_text', mock_read_text):
-                with patch('prompts_mcp.main.PROMPTS_DIR', prompts_dir):
-                    with patch('prompts_mcp.main.register_prompt') as mock_register:
-                        with patch('prompts_mcp.main.logger') as mock_logger:
+            with patch.object(Path, "read_text", mock_read_text):
+                with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
+                    with patch("prompts_mcp.main.register_prompt") as mock_register:
+                        with patch("prompts_mcp.main.logger") as mock_logger:
                             from prompts_mcp.main import load_all_prompts
+
                             load_all_prompts()
 
                             # Should log error for invalid file
@@ -162,11 +171,14 @@ Use carefully.
             prompts_dir.mkdir()
 
             # Create a large prompt file
-            large_content = "# Large Prompt\n\n" + "This is a large prompt file. " * 1000
+            large_content = (
+                "# Large Prompt\n\n" + "This is a large prompt file. " * 1000
+            )
             large_file = prompts_dir / "large_prompt.md"
             large_file.write_text(large_content)
 
             from prompts_mcp.main import load_prompt_file
+
             result = load_prompt_file(large_file)
 
             assert result["name"] == "large_prompt"
