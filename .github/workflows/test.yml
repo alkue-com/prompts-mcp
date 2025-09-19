@@ -26,6 +26,10 @@ jobs:
 
             - name: Install dependencies
               run: |
+                  uv sync
+
+            - name: Install development dependencies
+              run: |
                   uv pip install -e ".[dev,test]"
 
             - name: Run linting
