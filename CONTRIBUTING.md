@@ -70,14 +70,24 @@ Test in e.g. [VS Code](https://code.visualstudio.com/docs/copilot/customization/
 
 ```json
 {
-  "mcpServers": {
-    "prompts-mcp": {
-      "command": "uvx",
-      "args": ["--from", "/path/to/repo", "prompts-mcp"],
-      "env": {
-        "PROMPTS_DIR": "${env:PROMPTS_DIR}"
-      }
+    "mcpServers": {
+        "prompts-mcp": {
+            "command": "uvx",
+            "args": ["--from", "/path/to/repo", "prompts-mcp"],
+            "env": {
+                "PROMPTS_DIR": "${env:PROMPTS_DIR}"
+            }
+        }
     }
-  }
 }
 ```
+
+## Publish
+
+Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
+
+    python release.py rc
+
+Build and pubish to [PyPI](https://pypi.org/project/prompts-mcp/):
+
+    python release.py

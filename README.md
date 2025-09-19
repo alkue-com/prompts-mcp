@@ -13,15 +13,15 @@ The prompts are available for any MCP-compatible chat client that supports
 
 ```json
 {
-  "mcpServers": {
-    "prompts": {
-      "command": "uvx",
-      "args": ["prompts-mcp"],
-      "env": {
-        "PROMPTS_DIR": "/path/to/your/prompts"
-      }
+    "mcpServers": {
+        "prompts": {
+            "command": "uvx",
+            "args": ["prompts-mcp"],
+            "env": {
+                "PROMPTS_DIR": "/path/to/your/prompts"
+            }
+        }
     }
-  }
 }
 ```
 
