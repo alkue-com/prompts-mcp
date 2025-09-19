@@ -1,8 +1,10 @@
 # prompts-mcp
 
-This is an MCP (Model Context Protocol) server that serves prompts stored in a directory specified by the `PROMPTS_DIR` environment variable.
+This MCP (Model Context Protocol) server provides prompts from an
+user specified directory. The prompts are plain-text Markdown (`.md`) files.
 
-The prompts are accessible via any MCP-compatible client that supports server-provided prompts.
+The prompts are then accessible via any MCP-compatible client that supports
+[server-provided prompts](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts).
 
 ## Usage
 
@@ -22,13 +24,16 @@ The prompts are accessible via any MCP-compatible client that supports server-pr
 }
 ```
 
-The exact location of the `mcp.json` configuration file depends on your MCP client.
+The exact location of the `mcp.json` configuration file depends on your
+MCP client.
 
 ### Configuration
 
-The `PROMPTS_DIR` environment variable is **required** and must be set to the path containing your `.md` files.
+The `PROMPTS_DIR` environment variable is **required** and must be set to
+the path containing your `.md` files.
 
-The server will exit with an error if `PROMPTS_DIR` is not set or if the directory doesn't exist.
+The server will exit with an error if `PROMPTS_DIR` is not set,
+or if the directory doesn't exist.
 
 ## Development
 
