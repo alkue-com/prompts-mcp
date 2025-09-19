@@ -8,6 +8,7 @@ making them accessible to any MCP-compatible client.
 
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -24,6 +25,12 @@ if prompts_dir_env:
     PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
 else:
     PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+
+# Check if PROMPTS_DIR exists, exit if it doesn't
+if not PROMPTS_DIR.exists():
+    logger.error(f"Prompts directory does not exist: {PROMPTS_DIR}")
+    logger.error("Please create the prompts directory or set PROMPTS_DIR environment variable to a valid path")
+    sys.exit(1)
 
 # Create the FastMCP server
 app = FastMCP("prompts-mcp")
@@ -68,10 +75,6 @@ def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
 
 def load_all_prompts():
     """Load all prompts from the prompts directory and register them individually."""
-    if not PROMPTS_DIR.exists():
-        logger.warning(f"Prompts directory does not exist: {PROMPTS_DIR}")
-        return
-
     prompt_count = 0
     for prompt_file in PROMPTS_DIR.glob("*.md"):
         if prompt_file.name == "README.md":

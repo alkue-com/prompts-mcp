@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prompts-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "MCP server that serves prompts from local directory"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -14,8 +14,3 @@ dependencies = [
 
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["prompts_mcp*"]
-exclude = ["prompts"]
