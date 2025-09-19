@@ -27,14 +27,15 @@ def clean():
     dirs_to_remove = [
         "build",
         "dist",
-        ".pytest_cache",
         "htmlcov",
+        ".pytest_cache",
         ".ruff_cache",
     ]
 
     # Files to remove
     files_to_remove = [
         ".coverage",
+        "coverage.xml"
     ]
 
     # Remove directories
