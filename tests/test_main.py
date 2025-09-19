@@ -157,7 +157,7 @@ class TestMainBlock:
         import prompts_mcp.main
 
         # Verify the main function exists and is callable
-        assert hasattr(prompts_mcp.main, 'main')
+        assert hasattr(prompts_mcp.main, "main")
         assert callable(prompts_mcp.main.main)
 
         # The if __name__ == "__main__" block is only executed when the script

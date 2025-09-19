@@ -294,6 +294,7 @@ class TestRegisterPromptFunction:
 
         # Create a mock decorator that captures the function
         captured_func = None
+
         def mock_decorator(func):
             nonlocal captured_func
             captured_func = func
@@ -315,8 +316,11 @@ class TestRegisterPromptFunction:
 
         # Test the handler function with input arguments
         import asyncio
+
         result = asyncio.run(handler_func({"input": "Additional user input"}))
-        expected = "# Test Prompt\n\nThis is a test prompt content.\n\nAdditional user input"
+        expected = (
+            "# Test Prompt\n\nThis is a test prompt content.\n\nAdditional user input"
+        )
         assert result == expected
 
         # Test the handler function without input arguments

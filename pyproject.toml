@@ -26,9 +26,6 @@ dev = [
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
 
-[tool.ruff]
-line-length = 88
-
 [tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
