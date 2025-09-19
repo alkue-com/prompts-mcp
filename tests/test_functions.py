@@ -283,6 +283,51 @@ class TestRegisterPromptFunction:
         assert decorator_call[1]["description"] == "A test prompt for unit testing"
 
     @patch("prompts_mcp.main.app")
+    def test_register_prompt_handler_with_input(self, mock_app):
+        """Test that the registered prompt handler works with input arguments."""
+        sample_prompt_data = {
+            "name": "test_prompt",
+            "title": "Test Prompt",
+            "description": "A test prompt for unit testing",
+            "content": "# Test Prompt\n\nThis is a test prompt content.",
+        }
+
+        # Create a mock decorator that captures the function
+        captured_func = None
+        def mock_decorator(func):
+            nonlocal captured_func
+            captured_func = func
+            return func
+
+        mock_app.prompt.return_value = mock_decorator
+
+        # Import and set up the module properly
+        import prompts_mcp.main
+
+        prompts_mcp.main.app = mock_app
+
+        from prompts_mcp.main import register_prompt
+
+        register_prompt(sample_prompt_data)
+
+        # Get the handler function that was registered
+        handler_func = captured_func
+
+        # Test the handler function with input arguments
+        import asyncio
+        result = asyncio.run(handler_func({"input": "Additional user input"}))
+        expected = "# Test Prompt\n\nThis is a test prompt content.\n\nAdditional user input"
+        assert result == expected
+
+        # Test the handler function without input arguments
+        result_no_input = asyncio.run(handler_func(None))
+        assert result_no_input == "# Test Prompt\n\nThis is a test prompt content."
+
+        # Test the handler function with empty input
+        result_empty_input = asyncio.run(handler_func({"input": ""}))
+        assert result_empty_input == "# Test Prompt\n\nThis is a test prompt content."
+
+    @patch("prompts_mcp.main.app")
     def test_register_prompt_without_input_argument(self, mock_app):
         """Test that the registered prompt handler works without input
         arguments."""
