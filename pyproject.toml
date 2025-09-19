@@ -2,13 +2,12 @@
 name = "prompts-mcp"
 version = "1.3.1"
 description = "MCP server that provides prompts from a directory"
-authors = [{ name = "Anssi Syrjäsalo", email = "opensource@syrjasalo.com" }]
+authors = [{ name = "Anssi Syrjäsalo", email = "ai@alkue.com" }]
 requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "LGPLv3" }
 keywords = ["model-context-protocol", "mcp", "prompts", "ai", "llm"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
