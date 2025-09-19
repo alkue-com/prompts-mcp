@@ -1,10 +1,32 @@
 #!/usr/bin/env python3
-"""Release script - Python equivalent of release.sh"""
+"""Release script for building distributions andpublishing to PyPI.
+
+Logic for getting uv to read credentials from .pypirc by @bulletmark.
+From: https://github.com/bulletmark/uv-publish/blob/main/uv_publish.py
+
+"""
 
 import os
 import shutil
 import subprocess
 import sys
+from configparser import ConfigParser
+from pathlib import Path
+
+PYPIRC = Path.home() / ".pypirc"
+
+DEFAULT_CONFIG = """
+[distutils]
+index-servers =
+    pypi
+    testpypi
+
+[pypi]
+repository = https://upload.pypi.org/legacy/
+
+[testpypi]
+repository = https://test.pypi.org/legacy/
+"""
 
 
 def run_command(cmd, description=""):
@@ -55,6 +77,34 @@ def clear_dist_directory():
         print("dist/ directory does not exist, skipping clear")
 
 
+def build_uv_publish_command(repository="pypi"):
+    """Build uv publish command with credentials from .pypirc."""
+    config = ConfigParser()
+    config.read_string(DEFAULT_CONFIG)
+    if PYPIRC.exists():
+        config.read(PYPIRC)
+
+    settings = config[repository]
+    opts = []
+
+    if user := settings.get("username"):
+        password = settings.get("password")
+
+        if "__token__" in user:
+            if password:
+                opts.append(f"--token={password}")
+        else:
+            opts.append(f"--username={user}")
+            if password:
+                opts.append(f"--password={password}")
+
+        url = settings.get("repository")
+        if url and opts:
+            opts.append(f"--publish-url={url}")
+
+    return ["uv", "publish"] + opts
+
+
 def main():
     prerelease_type = sys.argv[1] if len(sys.argv) > 1 else None
 
@@ -75,14 +125,46 @@ def main():
 
     if prerelease_type:
         print(f"Creating pre-release ({prerelease_type})")
-        cmd = (
-            f'uv run cz bump --prerelease "{prerelease_type}" '
-            f"--allow-no-commit && uv build && uv publish --index testpypi"
-        )
-        run_command(cmd, "Creating pre-release and publishing to testpypi")
+
+        # Run bump command
+        bump_cmd = [
+            "uv",
+            "run",
+            "cz",
+            "bump",
+            "--prerelease",
+            prerelease_type,
+            "--allow-no-commit",
+        ]
+        run_command(" ".join(bump_cmd), "Creating pre-release")
+
+        # Run build command
+        run_command("uv build", "Building package")
+
+        # Run publish command with testpypi credentials
+        publish_cmd = build_uv_publish_command("testpypi")
+        print("Publishing to testpypi...")
+        print(f"Running: {' '.join(publish_cmd)}")
+        result = subprocess.run(publish_cmd)
+        if result.returncode != 0:
+            print(f"Publish failed with exit code {result.returncode}")
+            sys.exit(result.returncode)
     else:
-        cmd = "uv run cz bump --allow-no-commit && uv build && uv publish"
-        run_command(cmd, "Creating release and publishing to PyPI")
+        # Run bump command
+        bump_cmd = ["uv", "run", "cz", "bump", "--allow-no-commit"]
+        run_command(" ".join(bump_cmd), "Creating release")
+
+        # Run build command
+        run_command("uv build", "Building package")
+
+        # Run publish command with pypi credentials
+        publish_cmd = build_uv_publish_command("pypi")
+        print("Publishing to PyPI...")
+        print(f"Running: {' '.join(publish_cmd)}")
+        result = subprocess.run(publish_cmd)
+        if result.returncode != 0:
+            print(f"Publish failed with exit code {result.returncode}")
+            sys.exit(result.returncode)
 
 
 if __name__ == "__main__":
