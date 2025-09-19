@@ -109,7 +109,8 @@ def main():
         run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
-        print("Available commands: install-dev, format, lint, check, test, clean, all")
+        print("Available commands: install-dev, format, lint, check, test, "
+              "clean, all")
         sys.exit(1)
 
 
