@@ -22,18 +22,21 @@ logger = logging.getLogger("prompts-mcp")
 # Global variable to track signal count
 signal_count = 0
 
-# Directory containing prompts
-# Can be overridden with PROMPTS_DIR environment variable
+# Directory containing prompts - must be set via PROMPTS_DIR environment variable
 prompts_dir_env = os.getenv("PROMPTS_DIR")
-if prompts_dir_env:
-    PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
-else:
-    PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
+if not prompts_dir_env:
+    logger.error(
+        "PROMPTS_DIR environment variable is required. Please set PROMPTS_DIR to the path containing your prompt files"
+    )
+    sys.exit(1)
+
+PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
 
 # Check if PROMPTS_DIR exists, exit if it doesn't
 if not PROMPTS_DIR.exists():
-    logger.error(f"Prompts directory does not exist: {PROMPTS_DIR}")
-    logger.error("Please create the prompts directory or set PROMPTS_DIR environment variable to a valid path")
+    logger.error(
+        f"Prompts directory does not exist: {PROMPTS_DIR}. Please set PROMPTS_DIR environment variable to a valid path"
+    )
     sys.exit(1)
 
 # Create the FastMCP server
@@ -48,7 +51,7 @@ def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
     title = prompt_path.stem.replace("_", " ").title()
 
     # Parse the content to extract description
-    lines = content.split('\n')
+    lines = content.split("\n")
     description = ""
 
     # Look for IDENTITY and PURPOSE section to extract description
@@ -73,7 +76,7 @@ def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
         "name": prompt_path.stem,
         "title": title,
         "description": description.strip(),
-        "content": content
+        "content": content,
     }
 
 
@@ -106,12 +109,15 @@ def register_prompt(prompt_data: Dict[str, Any]):
     # Create a prompt handler function for this specific prompt
     def create_prompt_handler(content: str, name: str, description: str):
         @app.prompt(name=name, description=description)
-        async def prompt_handler(arguments: Optional[Dict[str, Any]] = None) -> str:
+        async def prompt_handler(
+            arguments: Optional[Dict[str, Any]] = None,
+        ) -> str:
             result = content
             # Add input if provided
             if arguments and "input" in arguments and arguments["input"]:
                 result += f"\n\n{arguments['input']}"
             return result
+
         return prompt_handler
 
     # Register the prompt
