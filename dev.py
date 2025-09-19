@@ -30,6 +30,7 @@ def clean():
         "htmlcov",
         ".pytest_cache",
         ".ruff_cache",
+        "prompts_mcp.egg-info",
     ]
 
     # Files to remove
