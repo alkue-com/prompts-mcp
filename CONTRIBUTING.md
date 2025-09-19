@@ -18,6 +18,12 @@ Run the server:
 
 Use `dev.py` script to run common development tasks.
 
+Run all the tasks below (install, format, lint, check, test) at once:
+
+    python dev.py all
+
+### Tasks
+
 Install development and test dependencies:
 
     python dev.py install
@@ -38,33 +44,29 @@ Run all tests:
 
     python dev.py test
 
-Clean build artifacts and cache files:
+Run only specific tests (takes `pytest` arguments):
 
-    python dev.py clean
+    python dev.py test -m unit
 
 ## Testing
-
-Run all above checks (install, format, lint, check, test) at once:
-
-    python dev.py all
 
 Use [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 
     npx -y @modelcontextprotocol/inspector \
         uv --directory "$PWD" run prompts-mcp
 
-Test in e.g. [Goose CLI](https://block.github.io/goose/docs/quickstart) (fast):
+Use it via [Goose CLI](https://block.github.io/goose/docs/quickstart):
 
-    goose session --with-extension "uvx --from "$PWD" prompts-mcp"
+    goose session --with-extension "uv --directory "$PWD" run prompts-mcp"
 
-Test in e.g. [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) `mcp.json` (slower):
+Use it via [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) or Cursor `mcp.json` (slower):
 
 ```json
 {
     "mcpServers": {
         "prompts-mcp": {
-            "command": "uvx",
-            "args": ["--from", "/path/to/repo", "prompts-mcp"],
+            "command": "uv",
+            "args": ["--directory", "/path/to/repo", "run", "prompts-mcp"],
             "env": {
                 "PROMPTS_DIR": "${env:PROMPTS_DIR}"
             }
@@ -73,12 +75,14 @@ Test in e.g. [VS Code](https://code.visualstudio.com/docs/copilot/customization/
 }
 ```
 
-## Publish
+## Release
+
+Use `release.py` to build and publish the source dist and the wheel.
 
 Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
 
     python release.py rc
 
-Build and pubish to [PyPI](https://pypi.org/project/prompts-mcp/):
+Build and publish to [PyPI](https://pypi.org/project/prompts-mcp/):
 
     python release.py
