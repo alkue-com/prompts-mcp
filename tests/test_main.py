@@ -40,9 +40,7 @@ class TestMainFunction:
         main()
 
         mock_init_server.assert_called_once()
-        mock_logger.info.assert_any_call(
-            "Starting prompts-mcp server with FastMCP"
-        )
+        mock_logger.info.assert_any_call("Starting prompts-mcp server with FastMCP")
         mock_signal.assert_called()
         mock_load_prompts.assert_called_once()
         mock_app.run.assert_called_once()

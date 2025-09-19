@@ -24,11 +24,14 @@ class TestIntegration:
             prompt_files = [
                 (
                     "system_prompt.md",
-                    "# System Prompt\n\n# IDENTITY AND PURPOSE\nThis is a system prompt for testing.",
+                    "# System Prompt\n\n# IDENTITY AND PURPOSE\nThis is a "
+                    "system "
+                    "prompt for testing.",
                 ),
                 (
                     "user_prompt.md",
-                    "# User Prompt\n\n# IDENTITY AND PURPOSE\nThis is a user prompt for testing.",
+                    "# User Prompt\n\n# IDENTITY AND PURPOSE\nThis is a user "
+                    "prompt for testing.",
                 ),
                 ("README.md", "# README\n\nThis should be ignored."),
             ]
@@ -39,9 +42,7 @@ class TestIntegration:
             # Mock the environment and PROMPTS_DIR
             with patch.dict(os.environ, {"PROMPTS_DIR": str(prompts_dir)}):
                 with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch(
-                        "prompts_mcp.main.register_prompt"
-                    ) as mock_register:
+                    with patch("prompts_mcp.main.register_prompt") as mock_register:
                         # Test loading all prompts
                         from prompts_mcp.main import load_all_prompts
 
@@ -52,9 +53,7 @@ class TestIntegration:
 
                         # Verify the registered prompts
                         calls = mock_register.call_args_list
-                        registered_names = [
-                            call[0][0]["name"] for call in calls
-                        ]
+                        registered_names = [call[0][0]["name"] for call in calls]
                         assert "system_prompt" in registered_names
                         assert "user_prompt" in registered_names
                         assert "README" not in registered_names
@@ -81,13 +80,16 @@ Use this prompt for testing purposes.
 Here are some examples.
 """,
                     "expected_title": "Standard Prompt",
-                    "expected_description": "This is a standard prompt with proper formatting.",
+                    "expected_description": "This is a standard prompt with "
+                    "proper "
+                    "formatting.",
                 },
                 {
                     "filename": "minimal_prompt.md",
                     "content": "Just a simple prompt without any sections.",
                     "expected_title": "Minimal Prompt",
-                    "expected_description": "Just a simple prompt without any sections....",
+                    "expected_description": "Just a simple prompt without any "
+                    "sections....",
                 },
                 {
                     "filename": "complex_formatting.md",
@@ -102,7 +104,10 @@ and various content.
 Usage instructions here.
 """,
                     "expected_title": "Complex Formatting",
-                    "expected_description": "This prompt has complex formatting with multiple lines and various content.",
+                    "expected_description": "This prompt has complex "
+                    "formatting "
+                    "with "
+                    "multiple lines and various content.",
                 },
                 {
                     "filename": "prompt_with_special_chars.md",
@@ -115,7 +120,9 @@ This prompt contains special characters: @#$%^&*()_+-=[]{}|;':\",./<>?
 Use carefully.
 """,
                     "expected_title": "Prompt With Special Chars",
-                    "expected_description": "This prompt contains special characters: @#$%^&*()_+-=[]{}|;':\",./<>?",
+                    "expected_description": "This prompt contains special "
+                    "characters: "
+                    "@#$%^&*()_+-=[]{}|;':\",./<>?",
                 },
             ]
 
@@ -127,13 +134,9 @@ Use carefully.
 
                 result = load_prompt_file(prompt_file)
 
-                assert result["name"] == test_case["filename"].replace(
-                    ".md", ""
-                )
+                assert result["name"] == test_case["filename"].replace(".md", "")
                 assert result["title"] == test_case["expected_title"]
-                assert (
-                    result["description"] == test_case["expected_description"]
-                )
+                assert result["description"] == test_case["expected_description"]
                 assert result["content"] == test_case["content"]
 
     def test_error_handling_integration(self):
@@ -160,9 +163,7 @@ Use carefully.
 
             with patch.object(Path, "read_text", mock_read_text):
                 with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch(
-                        "prompts_mcp.main.register_prompt"
-                    ) as mock_register:
+                    with patch("prompts_mcp.main.register_prompt") as mock_register:
                         with patch("prompts_mcp.main.logger") as mock_logger:
                             from prompts_mcp.main import load_all_prompts
 

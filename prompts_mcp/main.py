@@ -23,19 +23,21 @@ logger = logging.getLogger("prompts-mcp")
 signal_count = 0
 
 # Global variables that will be initialized in main()
-PROMPTS_DIR = None
-app = None
+PROMPTS_DIR: Path | None = None
+app: FastMCP | None = None
 
 
 def initialize_server():
     """Initialize the server with environment variables and directory checks."""
     global PROMPTS_DIR, app
 
-    # Directory containing prompts - must be set via PROMPTS_DIR environment variable
+    # Directory containing prompts - must be set via PROMPTS_DIR
+    # environment variable
     prompts_dir_env = os.getenv("PROMPTS_DIR")
     if not prompts_dir_env:
         logger.error(
-            "PROMPTS_DIR environment variable is required. Please set PROMPTS_DIR to the path containing your prompt files"
+            "PROMPTS_DIR environment variable is required. Please set "
+            "PROMPTS_DIR to the path containing your prompt files"
         )
         sys.exit(1)
 
@@ -44,7 +46,8 @@ def initialize_server():
     # Check if PROMPTS_DIR exists, exit if it doesn't
     if not PROMPTS_DIR.exists():
         logger.error(
-            f"Prompts directory does not exist: {PROMPTS_DIR}. Please set PROMPTS_DIR environment variable to a valid path"
+            f"Prompts directory does not exist: {PROMPTS_DIR}. Please set "
+            "PROMPTS_DIR environment variable to a valid path"
         )
         sys.exit(1)
 
@@ -56,7 +59,8 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
     """Load and parse a prompt file."""
     content = prompt_path.read_text(encoding="utf-8")
 
-    # Extract title from filename (remove .md extension and convert underscores to spaces)
+    # Extract title from filename (remove .md extension and convert
+    # underscores to spaces)
     title = prompt_path.stem.replace("_", " ").title()
 
     # Parse the content to extract description
@@ -90,7 +94,9 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
 
 
 def load_all_prompts():
-    """Load all prompts from the prompts directory and register them individually."""
+    """Load all prompts from the prompts directory and register them
+    individually."""
+    assert PROMPTS_DIR is not None, "PROMPTS_DIR must be initialized"
     prompt_count = 0
     for prompt_file in PROMPTS_DIR.glob("*.md"):
         if prompt_file.name == "README.md":
@@ -117,6 +123,8 @@ def register_prompt(prompt_data: dict[str, Any]):
 
     # Create a prompt handler function for this specific prompt
     def create_prompt_handler(content: str, name: str, description: str):
+        assert app is not None, "app must be initialized"
+
         @app.prompt(name=name, description=description)
         async def prompt_handler(
             arguments: dict[str, Any] | None = None,
@@ -168,6 +176,7 @@ def main():
 
     # Run the server directly - signal handler will handle shutdown
     try:
+        assert app is not None, "app must be initialized"
         app.run()
     except Exception as e:
         logger.error(f"Server error: {e}")

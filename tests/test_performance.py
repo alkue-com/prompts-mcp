@@ -43,7 +43,8 @@ class TestPerformance:
                 load_all_prompts()
                 end_time = time.time()
 
-                # Should complete loading 50 prompts in reasonable time (< 2 seconds)
+                # Should complete loading 50 prompts in reasonable time
+                # (< 2 seconds)
                 assert (end_time - start_time) < 2.0
 
     def test_memory_usage_with_large_files(self):
@@ -90,9 +91,7 @@ class TestPerformance:
         # Load prompts concurrently
         start_time = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(load_single_prompt, pf) for pf in prompt_files
-            ]
+            futures = [executor.submit(load_single_prompt, pf) for pf in prompt_files]
             results = [future.result() for future in futures]
         end_time = time.time()
 

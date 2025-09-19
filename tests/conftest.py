@@ -22,7 +22,8 @@ def temp_prompts_dir():
         sample_prompt_1.write_text("""# Test Prompt 1
 
 # IDENTITY AND PURPOSE
-This is a test prompt for unit testing purposes. It demonstrates the structure of a typical prompt file.
+This is a test prompt for unit testing purposes. It demonstrates the
+structure of a typical prompt file.
 
 # USAGE
 Use this prompt to test the prompts-mcp functionality.

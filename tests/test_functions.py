@@ -27,7 +27,8 @@ class TestLoadPromptFileFunction:
             prompt_file.write_text("""# Test Prompt 1
 
 # IDENTITY AND PURPOSE
-This is a test prompt for unit testing purposes. It demonstrates the structure of a typical prompt file.
+This is a test prompt for unit testing purposes. It demonstrates the
+structure of a typical prompt file.
 
 # USAGE
 Use this prompt to test the prompts-mcp functionality.
@@ -43,9 +44,7 @@ Here are some examples of how to use this prompt.
 
             assert result["name"] == "test_prompt_1"
             assert result["title"] == "Test Prompt 1"
-            assert (
-                "test prompt for unit testing purposes" in result["description"]
-            )
+            assert "test prompt for unit testing purposes" in result["description"]
             assert result["content"].startswith("# Test Prompt 1")
 
     def test_load_prompt_file_without_identity_section(self):
@@ -75,7 +74,8 @@ Just a simple prompt for testing purposes.
             assert result["content"].startswith("# Test Prompt 2")
 
     def test_load_prompt_file_with_underscores_in_name(self):
-        """Test that underscores in filename are converted to spaces in title."""
+        """Test that underscores in filename are converted to spaces in
+        title."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
             prompts_dir.mkdir()
@@ -125,9 +125,7 @@ class TestLoadAllPromptsFunction:
 
     @patch("prompts_mcp.main.register_prompt")
     @patch("prompts_mcp.main.PROMPTS_DIR")
-    def test_load_all_prompts_success(
-        self, mock_prompts_dir, mock_register_prompt
-    ):
+    def test_load_all_prompts_success(self, mock_prompts_dir, mock_register_prompt):
         """Test successful loading of all prompts."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -186,7 +184,8 @@ class TestLoadAllPromptsFunction:
     def test_load_all_prompts_handles_errors(
         self, mock_logger, mock_prompts_dir, mock_register_prompt
     ):
-        """Test that errors in loading individual prompts are handled gracefully."""
+        """Test that errors in loading individual prompts are handled
+        gracefully."""
         mock_prompts_dir.glob.return_value = [Path("/nonexistent/prompt.md")]
         mock_register_prompt.side_effect = Exception("Test error")
 
@@ -203,9 +202,7 @@ class TestLoadAllPromptsFunction:
 
     @patch("prompts_mcp.main.register_prompt")
     @patch("prompts_mcp.main.PROMPTS_DIR")
-    def test_load_all_prompts_no_files(
-        self, mock_prompts_dir, mock_register_prompt
-    ):
+    def test_load_all_prompts_no_files(self, mock_prompts_dir, mock_register_prompt):
         """Test loading when no prompt files exist."""
         mock_prompts_dir.glob.return_value = []
 
@@ -250,9 +247,7 @@ class TestRegisterPromptFunction:
         # Get the decorator call
         decorator_call = mock_app.prompt.call_args
         assert decorator_call[1]["name"] == "test_prompt"
-        assert (
-            decorator_call[1]["description"] == "A test prompt for unit testing"
-        )
+        assert decorator_call[1]["description"] == "A test prompt for unit testing"
 
     @patch("prompts_mcp.main.app")
     def test_register_prompt_with_input_argument(self, mock_app):
@@ -285,13 +280,12 @@ class TestRegisterPromptFunction:
         # Get the decorator call and verify the arguments
         decorator_call = mock_app.prompt.call_args
         assert decorator_call[1]["name"] == "test_prompt"
-        assert (
-            decorator_call[1]["description"] == "A test prompt for unit testing"
-        )
+        assert decorator_call[1]["description"] == "A test prompt for unit testing"
 
     @patch("prompts_mcp.main.app")
     def test_register_prompt_without_input_argument(self, mock_app):
-        """Test that the registered prompt handler works without input arguments."""
+        """Test that the registered prompt handler works without input
+        arguments."""
         sample_prompt_data = {
             "name": "test_prompt",
             "title": "Test Prompt",
@@ -320,9 +314,7 @@ class TestRegisterPromptFunction:
         # Get the decorator call and verify the arguments
         decorator_call = mock_app.prompt.call_args
         assert decorator_call[1]["name"] == "test_prompt"
-        assert (
-            decorator_call[1]["description"] == "A test prompt for unit testing"
-        )
+        assert decorator_call[1]["description"] == "A test prompt for unit testing"
 
     @patch("prompts_mcp.main.app")
     def test_register_prompt_with_empty_input(self, mock_app):
@@ -355,9 +347,7 @@ class TestRegisterPromptFunction:
         # Get the decorator call and verify the arguments
         decorator_call = mock_app.prompt.call_args
         assert decorator_call[1]["name"] == "test_prompt"
-        assert (
-            decorator_call[1]["description"] == "A test prompt for unit testing"
-        )
+        assert decorator_call[1]["description"] == "A test prompt for unit testing"
 
 
 @pytest.mark.unit
@@ -405,9 +395,7 @@ class TestSignalHandlerFunction:
 
     @patch("signal.signal")
     @patch("os._exit")
-    def test_signal_handler_sets_up_second_handler(
-        self, mock_exit, mock_signal
-    ):
+    def test_signal_handler_sets_up_second_handler(self, mock_exit, mock_signal):
         """Test that signal handler sets up handler for second interrupt."""
         import prompts_mcp.main
 
