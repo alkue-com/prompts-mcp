@@ -16,9 +16,9 @@ Run the server:
 
 ## Development
 
-Use `dev.py` script to run common development tasks.
+Use `dev.py` for common development tasks.
 
-Run all the tasks below (install, format, lint, check, test) at once:
+To run all the tasks below (install, format, lint, check, test) at once:
 
     python dev.py all
 
@@ -44,11 +44,11 @@ Run all tests:
 
     python dev.py test
 
-Run only specific tests (takes `pytest` arguments):
+To run only specific tests (takes `pytest` arguments):
 
     python dev.py test -m slow
 
-## Testing
+## Test drive
 
 Use it in [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 
