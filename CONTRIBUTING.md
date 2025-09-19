@@ -6,10 +6,6 @@ Install development tools with [mise](https://mise.jdx.dev/):
 
     mise install
 
-Install Python dependencies:
-
-    uv sync
-
 Set the `PROMPTS_DIR` environment variable:
 
     export PROMPTS_DIR="/path/to/your/prompts"

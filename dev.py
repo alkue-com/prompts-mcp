@@ -73,7 +73,7 @@ def main():
         print("Usage: python dev.py <command>")
         print("")
         print("Commands:")
-        print("  install      Install development dependencies")
+        print("  install      Install Python dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
         print("  check        Check code without fixing")
@@ -88,7 +88,7 @@ def main():
         "install": (
             "uv sync --extra dev --extra test && "
             "pre-commit install --hook-type pre-commit --hook-type commit-msg",
-            "Installing development dependencies",
+            "Installing Python dependencies",
         ),
         "format": ("ruff format .", "Formatting code"),
         "lint": ("ruff check . --fix", "Linting code"),
