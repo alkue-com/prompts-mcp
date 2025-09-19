@@ -76,3 +76,22 @@ The environment variable supports:
 **Note**: The exact location of the `mcp.json` configuration file depends on your MCP client. For Claude Desktop, it's typically located at:
 - **macOS**: `~/Library/Application Support/Claude/mcp.json`
 - **Windows**: `%APPDATA%\Claude\mcp.json`
+
+## Testing
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run unit tests only
+uv run pytest -m unit
+
+# Run integration tests only
+uv run pytest -m integration
+
+# Run performance tests only
+uv run pytest -m slow
+
+# Run with coverage
+uv run pytest --cov=prompts_mcp --cov-report=html
+```

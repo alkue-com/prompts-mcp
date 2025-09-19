@@ -22,25 +22,34 @@ logger = logging.getLogger("prompts-mcp")
 # Global variable to track signal count
 signal_count = 0
 
-# Directory containing prompts - must be set via PROMPTS_DIR environment variable
-prompts_dir_env = os.getenv("PROMPTS_DIR")
-if not prompts_dir_env:
-    logger.error(
-        "PROMPTS_DIR environment variable is required. Please set PROMPTS_DIR to the path containing your prompt files"
-    )
-    sys.exit(1)
+# Global variables that will be initialized in main()
+PROMPTS_DIR = None
+app = None
 
-PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
 
-# Check if PROMPTS_DIR exists, exit if it doesn't
-if not PROMPTS_DIR.exists():
-    logger.error(
-        f"Prompts directory does not exist: {PROMPTS_DIR}. Please set PROMPTS_DIR environment variable to a valid path"
-    )
-    sys.exit(1)
+def initialize_server():
+    """Initialize the server with environment variables and directory checks."""
+    global PROMPTS_DIR, app
 
-# Create the FastMCP server
-app = FastMCP("prompts-mcp")
+    # Directory containing prompts - must be set via PROMPTS_DIR environment variable
+    prompts_dir_env = os.getenv("PROMPTS_DIR")
+    if not prompts_dir_env:
+        logger.error(
+            "PROMPTS_DIR environment variable is required. Please set PROMPTS_DIR to the path containing your prompt files"
+        )
+        sys.exit(1)
+
+    PROMPTS_DIR = Path(prompts_dir_env).expanduser().resolve()
+
+    # Check if PROMPTS_DIR exists, exit if it doesn't
+    if not PROMPTS_DIR.exists():
+        logger.error(
+            f"Prompts directory does not exist: {PROMPTS_DIR}. Please set PROMPTS_DIR environment variable to a valid path"
+        )
+        sys.exit(1)
+
+    # Create the FastMCP server
+    app = FastMCP("prompts-mcp")
 
 
 def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
@@ -144,6 +153,9 @@ def signal_handler(signum, frame):
 
 def main():
     """Main entry point for the MCP server."""
+    # Initialize server first
+    initialize_server()
+
     logger.info("Starting prompts-mcp server with FastMCP")
     logger.info(f"Using prompts directory: {PROMPTS_DIR}")
 
