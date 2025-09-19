@@ -19,12 +19,7 @@ classifiers = [
 dependencies = ["mcp>=1.14.1"]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-asyncio",
-    "pytest-mock",
-    "pytest-cov",
-]
+test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov"]
 dev = ["ruff"]
 
 [project.scripts]
@@ -75,4 +70,3 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
-
