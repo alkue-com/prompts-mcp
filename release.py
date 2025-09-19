@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Release script - Python equivalent of release.sh"""
 
+import os
+import shutil
 import subprocess
 import sys
 
@@ -40,6 +42,17 @@ def check_working_tree_clean():
         sys.exit(1)
 
 
+def clear_dist_directory():
+    """Clear the dist/ directory if it exists."""
+    dist_path = "dist"
+    if os.path.exists(dist_path):
+        print("Clearing dist/ directory...")
+        shutil.rmtree(dist_path)
+        print("dist/ directory cleared")
+    else:
+        print("dist/ directory does not exist, skipping clear")
+
+
 def main():
     prerelease_type = sys.argv[1] if len(sys.argv) > 1 else None
 
@@ -54,6 +67,9 @@ def main():
 
     # Check if working tree is clean
     check_working_tree_clean()
+
+    # Clear dist directory before building
+    clear_dist_directory()
 
     if prerelease_type:
         print(f"Creating pre-release ({prerelease_type})")
