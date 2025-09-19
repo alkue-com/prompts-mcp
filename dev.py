@@ -91,7 +91,7 @@ def main():
 
     commands = {
         "install": (
-            "uv sync --extra dev --extra test && "
+            "uv sync --extra dev --extra test --no-managed-python && "
             "pre-commit install --hook-type pre-commit --hook-type commit-msg",
             "Installing Python dependencies",
         ),
