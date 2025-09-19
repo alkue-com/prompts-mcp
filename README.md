@@ -1,6 +1,6 @@
 # prompts-mcp
 
-This is an MCP (Model Context Protocol) server that serves prompts stored in a configurable directory (defaults to `prompts/`).
+This is an MCP (Model Context Protocol) server that serves prompts stored in a directory specified by the `PROMPTS_DIR` environment variable.
 
 The prompts are accessible via any MCP-compatible client that supports server-provided prompts.
 
@@ -11,47 +11,46 @@ The prompts are accessible via any MCP-compatible client that supports server-pr
    uv sync
    ```
 
-2. **Run the server:**
+2. **Set the PROMPTS_DIR environment variable:**
+   ```bash
+   export PROMPTS_DIR="/path/to/your/prompts"
+   ```
+
+3. **Run the server:**
    ```bash
    uv run prompts-mcp
    ```
 
-3. **Configure your MCP client** (e.g., Claude Desktop) by adding to your `mcp.json`:
+4. **Configure your MCP client** (e.g., Claude Desktop) by adding to your `mcp.json`:
    ```json
    {
      "mcpServers": {
        "prompts": {
          "command": "uv",
          "args": ["run", "prompts-mcp"],
-         "cwd": "/path/to/prompts-mcp"
+         "cwd": "/path/to/prompts-mcp",
+         "env": {
+           "PROMPTS_DIR": "/path/to/your/prompts"
+         }
        }
      }
    }
    ```
 
-Replace `/path/to/prompts-mcp` with the actual absolute path to your prompts-mcp directory.
-
-## Features
-
-- Automatically discovers and loads all `.md` prompt files from the `prompts/` directory
-- Extracts prompt descriptions from the "IDENTITY and PURPOSE" sections
-- Provides proper MCP server interface with prompt listing and retrieval
-- Supports input arguments for prompts
-- Compatible with MCP-enabled clients
-- Configurable prompts directory via environment variable
+Replace `/path/to/prompts-mcp` with the actual absolute path to your prompts-mcp directory, and `/path/to/your/prompts` with the actual path to your prompts directory.
 
 ## Configuration
 
-### Custom Prompts Directory
+### Required: PROMPTS_DIR Environment Variable
 
-To use a custom prompts directory, set the `PROMPTS_DIR` environment variable:
+The `PROMPTS_DIR` environment variable is **required** and must be set to the path containing your prompt files:
 
 ```bash
 export PROMPTS_DIR="/path/to/your/prompts"
 uv run prompts-mcp
 ```
 
-Or add it to your MCP client configuration:
+You must also set it in your MCP client configuration:
 
 ```json
 {
@@ -72,6 +71,8 @@ The environment variable supports:
 - Absolute paths: `/home/user/my-prompts`
 - Relative paths: `../shared-prompts`
 - Home directory expansion: `~/Documents/prompts`
+
+**Important**: The prompts directory must exist and contain `.md` files. The server will exit with an error if `PROMPTS_DIR` is not set or if the directory doesn't exist.
 
 **Note**: The exact location of the `mcp.json` configuration file depends on your MCP client. For Claude Desktop, it's typically located at:
 - **macOS**: `~/Library/Application Support/Claude/mcp.json`
