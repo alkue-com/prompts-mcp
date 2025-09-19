@@ -3,7 +3,6 @@ bump_message = "chore: Release $new_version"
 tag_format = "$version"
 version = "1.1.0"
 version_files = [
-    "README.md",
     "pyproject.toml:version",
     "prompts_mcp/__init__.py:__version__"
 ]
