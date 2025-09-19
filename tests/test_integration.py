@@ -39,7 +39,9 @@ class TestIntegration:
             # Mock the environment and PROMPTS_DIR
             with patch.dict(os.environ, {"PROMPTS_DIR": str(prompts_dir)}):
                 with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch("prompts_mcp.main.register_prompt") as mock_register:
+                    with patch(
+                        "prompts_mcp.main.register_prompt"
+                    ) as mock_register:
                         # Test loading all prompts
                         from prompts_mcp.main import load_all_prompts
 
@@ -50,7 +52,9 @@ class TestIntegration:
 
                         # Verify the registered prompts
                         calls = mock_register.call_args_list
-                        registered_names = [call[0][0]["name"] for call in calls]
+                        registered_names = [
+                            call[0][0]["name"] for call in calls
+                        ]
                         assert "system_prompt" in registered_names
                         assert "user_prompt" in registered_names
                         assert "README" not in registered_names
@@ -123,9 +127,13 @@ Use carefully.
 
                 result = load_prompt_file(prompt_file)
 
-                assert result["name"] == test_case["filename"].replace(".md", "")
+                assert result["name"] == test_case["filename"].replace(
+                    ".md", ""
+                )
                 assert result["title"] == test_case["expected_title"]
-                assert result["description"] == test_case["expected_description"]
+                assert (
+                    result["description"] == test_case["expected_description"]
+                )
                 assert result["content"] == test_case["content"]
 
     def test_error_handling_integration(self):
@@ -152,7 +160,9 @@ Use carefully.
 
             with patch.object(Path, "read_text", mock_read_text):
                 with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch("prompts_mcp.main.register_prompt") as mock_register:
+                    with patch(
+                        "prompts_mcp.main.register_prompt"
+                    ) as mock_register:
                         with patch("prompts_mcp.main.logger") as mock_logger:
                             from prompts_mcp.main import load_all_prompts
 

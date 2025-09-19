@@ -27,8 +27,7 @@ dev = [
 prompts-mcp = "prompts_mcp.main:main"
 
 [tool.ruff]
-target-version = "py313"
-line-length = 88
+line-length = 80
 
 [tool.ruff.lint]
 select = [

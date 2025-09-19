@@ -21,7 +21,12 @@ class TestMainFunction:
     @patch("prompts_mcp.main.logger")
     @patch("prompts_mcp.main.initialize_server")
     def test_main_success(
-        self, mock_init_server, mock_logger, mock_signal, mock_app, mock_load_prompts
+        self,
+        mock_init_server,
+        mock_logger,
+        mock_signal,
+        mock_app,
+        mock_load_prompts,
     ):
         """Test successful main function execution."""
         # Set up the mocked app and PROMPTS_DIR
@@ -35,7 +40,9 @@ class TestMainFunction:
         main()
 
         mock_init_server.assert_called_once()
-        mock_logger.info.assert_any_call("Starting prompts-mcp server with FastMCP")
+        mock_logger.info.assert_any_call(
+            "Starting prompts-mcp server with FastMCP"
+        )
         mock_signal.assert_called()
         mock_load_prompts.assert_called_once()
         mock_app.run.assert_called_once()
