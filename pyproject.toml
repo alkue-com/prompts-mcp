@@ -1,6 +1,6 @@
 [project]
 name = "prompts-mcp"
-version = "1.2.2"
+version = "1.2.3rc0"
 description = "MCP server that provides prompts from an user defined directory"
 authors = [{ name = "Anssi Syrjäsalo", email = "opensource@syrjasalo.com" }]
 requires-python = ">=3.10"
