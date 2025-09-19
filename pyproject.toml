@@ -27,6 +27,7 @@ prompts-mcp = "prompts_mcp.main:main"
 [project.urls]
 Homepage = "https://pypi.org/project/prompts-mcp"
 Repository = "https://github.com/alkue-com/prompts-mcp"
+Documentation = "https://github.com/alkue-com/prompts-mcp/blob/main/README.md"
 
 [tool.pytest.ini_options]
 testpaths = "tests"

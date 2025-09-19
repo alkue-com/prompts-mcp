@@ -96,7 +96,6 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
 def load_all_prompts():
     """Load all prompts from the prompts directory and register them
     individually."""
-    assert PROMPTS_DIR is not None, "PROMPTS_DIR must be initialized"
     prompt_count = 0
     for prompt_file in PROMPTS_DIR.glob("*.md"):
         if prompt_file.name == "README.md":
@@ -123,8 +122,6 @@ def register_prompt(prompt_data: dict[str, Any]):
 
     # Create a prompt handler function for this specific prompt
     def create_prompt_handler(content: str, name: str, description: str):
-        assert app is not None, "app must be initialized"
-
         @app.prompt(name=name, description=description)
         async def prompt_handler(
             arguments: dict[str, Any] | None = None,
@@ -176,7 +173,6 @@ def main():
 
     # Run the server directly - signal handler will handle shutdown
     try:
-        assert app is not None, "app must be initialized"
         app.run()
     except Exception as e:
         logger.error(f"Server error: {e}")
