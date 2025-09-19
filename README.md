@@ -1,14 +1,15 @@
 # prompts-mcp
 
-This MCP (Model Context Protocol) server provides prompts from an
-user specified directory. The prompts are plain-text Markdown (`.md`) files.
+MCP (Model Context Protocol) server that provides prompts from a directory.
 
-The prompts are then accessible via any MCP-compatible client that supports
-[server-provided prompts](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts).
+The prompts are Markdown files and named after their file name.
 
 ## Usage
 
-**Configure your MCP client** (e.g., Claude Desktop) by adding to your `mcp json`:
+The prompts are available for any MCP-compatible chat client that supports
+[server-provided prompts](https://modelcontextprotocol.io/docs/learn/server-concepts#how-prompts-work).
+
+**Configure your client** (e.g. Claude Desktop) by adding to your `mcp json`:
 
 ```json
 {
@@ -24,17 +25,16 @@ The prompts are then accessible via any MCP-compatible client that supports
 }
 ```
 
-The exact location of the `mcp.json` configuration file depends on your
-MCP client.
+The exact location of the `mcp.json` configuration file depends on your client.
 
 ### Configuration
 
 The `PROMPTS_DIR` environment variable is **required** and must be set to
-the path containing your `.md` files.
+a path containing all your `.md` files you want to serve as prompts.
 
-The server will exit with an error if `PROMPTS_DIR` is not set,
+The server will exit with an error if `PROMPTS_DIR` is not set
 or if the directory doesn't exist.
 
 ## Development
 
-See `CONTRIBUTING.md` for local setup.
+Roughly 100% coded by AI. See `CONTRIBUTING.md` for local setup.
