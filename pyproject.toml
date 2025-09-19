@@ -29,7 +29,7 @@ Homepage = "https://pypi.org/project/prompts-mcp"
 Repository = "https://github.com/alkue-com/prompts-mcp"
 
 [tool.pytest.ini_options]
-testpaths = "test"
+testpaths = "tests"
 addopts = [
     "-v",
     "--strict-markers",
