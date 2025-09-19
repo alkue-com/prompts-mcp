@@ -8,10 +8,9 @@ making them accessible to any MCP-compatible client.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from mcp.server.fastmcp import FastMCP
-from mcp.types import Prompt, PromptArgument
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -62,7 +61,7 @@ def load_prompt_file(prompt_path: Path) -> Dict[str, Any]:
 
 
 def load_all_prompts():
-    """Load all prompts from the prompts directory and add them to the server."""
+    """Load all prompts from the prompts directory and store them for the prompt handler."""
     if not PROMPTS_DIR.exists():
         logger.warning(f"Prompts directory does not exist: {PROMPTS_DIR}")
         return
@@ -75,23 +74,9 @@ def load_all_prompts():
         try:
             prompt_data = load_prompt_file(prompt_file)
 
-            # Add prompt using FastMCP's add_prompt method
-            prompt = Prompt(
-                name=prompt_data["name"],
-                title=prompt_data["title"],
-                description=prompt_data["description"],
-                arguments=[
-                    PromptArgument(
-                        name="input",
-                        description="Optional input content to append to the prompt",
-                        required=False
-                    )
-                ]
-            )
-            app.add_prompt(prompt)
-
             # Store the prompt content for retrieval
             setattr(app, f"_prompt_content_{prompt_data['name']}", prompt_data["content"])
+            setattr(app, f"_prompt_data_{prompt_data['name']}", prompt_data)
             prompt_count += 1
 
         except Exception as e:
@@ -102,7 +87,7 @@ def load_all_prompts():
 
 # Custom prompt handler using the @app.prompt decorator
 @app.prompt()
-async def handle_prompt(name: str, arguments: Dict[str, Any] = None) -> str:
+async def handle_prompt(name: str, arguments: Optional[Dict[str, Any]] = None) -> str:
     """Handle prompt requests."""
     # Get the stored prompt content
     content_attr = f"_prompt_content_{name}"
