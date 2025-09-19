@@ -23,7 +23,6 @@ Run the server:
 
     uv run prompts-mcp
 
-
 ## Development
 
 Use `dev.py` script to run common development tasks.
@@ -74,9 +73,9 @@ Test in e.g. [VS Code](https://code.visualstudio.com/docs/copilot/customization/
   "mcpServers": {
     "prompts-mcp": {
       "command": "uvx",
-      "args": ["prompts-mcp"],
+      "args": ["--from", "/path/to/repo", "prompts-mcp"],
       "env": {
-        "PROMPTS_DIR": "/path/to/your/prompts"
+        "PROMPTS_DIR": "${env:PROMPTS_DIR}"
       }
     }
   }
