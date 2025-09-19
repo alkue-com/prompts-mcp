@@ -40,7 +40,9 @@ class TestMainFunction:
         main()
 
         mock_init_server.assert_called_once()
-        mock_logger.info.assert_any_call("Starting prompts-mcp server with FastMCP")
+        mock_logger.info.assert_any_call(
+            "Starting prompts-mcp server with FastMCP"
+        )
         mock_signal.assert_called()
         mock_load_prompts.assert_called_once()
         mock_app.run.assert_called_once()
@@ -85,7 +87,9 @@ class TestEnvironmentValidation:
     @patch("prompts_mcp.main.logger")
     @patch("sys.exit")
     @patch.dict("os.environ", {}, clear=True)
-    def test_initialize_server_missing_prompts_dir(self, mock_exit, mock_logger):
+    def test_initialize_server_missing_prompts_dir(
+        self, mock_exit, mock_logger
+    ):
         """Test initialize_server fails when PROMPTS_DIR is not set."""
         # Mock sys.exit to raise SystemExit to prevent actual exit
         mock_exit.side_effect = SystemExit(1)

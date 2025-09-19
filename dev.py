@@ -84,7 +84,9 @@ def main():
         print("Examples:")
         print("  python dev.py test                     # Run all tests")
         print("  python dev.py test -m unit             # Run unit tests")
-        print("  python dev.py test tests/test_main.py  # Run specific test file")
+        print(
+            "  python dev.py test tests/test_main.py  # Run specific test file"
+        )
         sys.exit(1)
 
     command = sys.argv[1]
@@ -92,12 +94,13 @@ def main():
     commands = {
         "install": (
             "uv sync --extra dev --extra test --no-managed-python && "
-            "pre-commit install --hook-type pre-commit --hook-type commit-msg",
+            "uv run pre-commit install --hook-type pre-commit "
+            "--hook-type commit-msg",
             "Installing Python dependencies",
         ),
-        "format": ("ruff format .", "Formatting code"),
-        "lint": ("ruff check . --fix", "Linting code"),
-        "check": ("ruff check .", "Checking code"),
+        "format": ("uv run ruff format .", "Formatting code"),
+        "lint": ("uv run ruff check . --fix", "Linting code"),
+        "check": ("uv run ruff check .", "Checking code"),
         "clean": (None, "Cleaning build artifacts"),  # Handled by function
     }
 
@@ -106,7 +109,7 @@ def main():
         for cmd_name in ["install", "format", "lint", "check", "test"]:
             if cmd_name == "test":
                 # For 'all' command, run tests without additional arguments
-                run_command("pytest", "Running tests")
+                run_command("uv run pytest", "Running tests")
             else:
                 cmd, desc = commands[cmd_name]
                 run_command(cmd, desc)
@@ -115,14 +118,20 @@ def main():
     elif command == "test":
         # Handle test command with pytest arguments
         pytest_args = sys.argv[2:] if len(sys.argv) > 2 else []
-        pytest_cmd = "pytest " + " ".join(pytest_args) if pytest_args else "pytest"
+        pytest_cmd = (
+            "uv run pytest " + " ".join(pytest_args)
+            if pytest_args
+            else "uv run pytest"
+        )
         run_command(pytest_cmd, "Running tests")
     elif command in commands:
         cmd, desc = commands[command]
         run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
-        print("Available commands: install, format, lint, check, test, clean, all")
+        print(
+            "Available commands: install, format, lint, check, test, clean, all"
+        )
         sys.exit(1)
 
 

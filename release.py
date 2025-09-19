@@ -32,7 +32,9 @@ def get_current_branch():
 
 def check_working_tree_clean():
     """Check if the working tree has uncommitted changes."""
-    result = subprocess.run(["git", "status", "-s"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", "status", "-s"], capture_output=True, text=True
+    )
     if result.returncode != 0:
         print("Error: Failed to check git status")
         sys.exit(1)
@@ -80,7 +82,8 @@ def main():
         run_command(cmd, "Creating pre-release and publishing to testpypi")
     else:
         cmd = (
-            "uvx --from commitizen cz bump --allow-no-commit && uv build && uv publish"
+            "uvx --from commitizen cz bump --allow-no-commit && "
+            "uv build && uv publish"
         )
         run_command(cmd, "Creating release and publishing to PyPI")
 

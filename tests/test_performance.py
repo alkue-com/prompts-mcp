@@ -91,7 +91,9 @@ class TestPerformance:
         # Load prompts concurrently
         start_time = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(load_single_prompt, pf) for pf in prompt_files]
+            futures = [
+                executor.submit(load_single_prompt, pf) for pf in prompt_files
+            ]
             results = [future.result() for future in futures]
         end_time = time.time()
 
