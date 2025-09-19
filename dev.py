@@ -70,16 +70,21 @@ def clean():
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python dev.py <command>")
+        print("Usage: python dev.py <command> [args...]")
         print("")
         print("Commands:")
         print("  install      Install Python dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
         print("  check        Check code without fixing")
-        print("  test         Run tests")
+        print("  test         Run tests (accepts pytest arguments)")
         print("  clean        Clean build artifacts")
         print("  all          Run all checks")
+        print("")
+        print("Examples:")
+        print("  python dev.py test                     # Run all tests")
+        print("  python dev.py test -m unit             # Run unit tests")
+        print("  python dev.py test tests/test_main.py  # Run specific test file")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -93,17 +98,25 @@ def main():
         "format": ("ruff format .", "Formatting code"),
         "lint": ("ruff check . --fix", "Linting code"),
         "check": ("ruff check .", "Checking code"),
-        "test": ("pytest", "Running tests"),
         "clean": (None, "Cleaning build artifacts"),  # Handled by function
     }
 
     if command == "all":
         print("Running all checks...")
         for cmd_name in ["install", "format", "lint", "check", "test"]:
-            cmd, desc = commands[cmd_name]
-            run_command(cmd, desc)
+            if cmd_name == "test":
+                # For 'all' command, run tests without additional arguments
+                run_command("pytest", "Running tests")
+            else:
+                cmd, desc = commands[cmd_name]
+                run_command(cmd, desc)
     elif command == "clean":
         clean()  # Special case - use function instead of command
+    elif command == "test":
+        # Handle test command with pytest arguments
+        pytest_args = sys.argv[2:] if len(sys.argv) > 2 else []
+        pytest_cmd = "pytest " + " ".join(pytest_args) if pytest_args else "pytest"
+        run_command(pytest_cmd, "Running tests")
     elif command in commands:
         cmd, desc = commands[command]
         run_command(cmd, desc)

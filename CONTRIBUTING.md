@@ -46,7 +46,7 @@ Run all tests:
 
 Run only specific tests (takes `pytest` arguments):
 
-    python dev.py test -m unit
+    python dev.py test -m slow
 
 ## Testing
 
