@@ -33,10 +33,7 @@ def clean():
     ]
 
     # Files to remove
-    files_to_remove = [
-        ".coverage",
-        "coverage.xml"
-    ]
+    files_to_remove = [".coverage", "coverage.xml"]
 
     # Remove directories
     for dir_name in dirs_to_remove:
