@@ -50,16 +50,16 @@ Run only specific tests (takes `pytest` arguments):
 
 ## Testing
 
-Use [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
+Use it in [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 
     npx -y @modelcontextprotocol/inspector \
         uv --directory "$PWD" run prompts-mcp
 
-Use it via [Goose CLI](https://block.github.io/goose/docs/quickstart):
+Use it in [Goose CLI](https://block.github.io/goose/docs/quickstart):
 
     goose session --with-extension "uv --directory "$PWD" run prompts-mcp"
 
-Use it via [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) or Cursor `mcp.json` (slower):
+Use it in [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers#_add-an-mcp-server) or [Cursor](https://cursor.com/docs/context/mcp#using-mcpjson) `mcp.json`:
 
 ```json
 {
