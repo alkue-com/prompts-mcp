@@ -1,14 +1,12 @@
 # Contributing
 
-Install [pre-commit](https://pre-commit.com/) if it is not already installed.
-
-Install pre-commit hooks in your git working copy:
-
-    pre-commit install --hook-type pre-commit --hook-type commit-msg
-
 ## Setup
 
-Install dependencies:
+Install development tools with [mise](https://mise.jdx.dev/):
+
+    mise install
+
+Install Python dependencies:
 
     uv sync
 
@@ -24,9 +22,9 @@ Run the server:
 
 Use `dev.py` script to run common development tasks.
 
-Install development dependencies:
+Install development and test dependencies:
 
-    python dev.py install-dev
+    python dev.py install
 
 Format code:
 
@@ -36,7 +34,7 @@ Lint and fix code:
 
     python dev.py lint
 
-Check code without:
+Check code without fixing:
 
     python dev.py check
 
@@ -50,7 +48,7 @@ Clean build artifacts and cache files:
 
 ## Testing
 
-Run all checks (install-dev, format, lint, check, test):
+Run all above checks (install, format, lint, check, test) at once:
 
     python dev.py all
 

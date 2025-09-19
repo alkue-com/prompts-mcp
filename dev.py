@@ -73,7 +73,7 @@ def main():
         print("Usage: python dev.py <command>")
         print("")
         print("Commands:")
-        print("  install-dev  Install development dependencies")
+        print("  install      Install development dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
         print("  check        Check code without fixing")
@@ -85,8 +85,9 @@ def main():
     command = sys.argv[1]
 
     commands = {
-        "install-dev": (
-            'uv pip install -e ".[dev,test]"',
+        "install": (
+            "uv sync --extra dev --extra test && "
+            "pre-commit install --hook-type pre-commit --hook-type commit-msg",
             "Installing development dependencies",
         ),
         "format": ("ruff format .", "Formatting code"),
@@ -98,7 +99,7 @@ def main():
 
     if command == "all":
         print("Running all checks...")
-        for cmd_name in ["install-dev", "format", "lint", "check", "test"]:
+        for cmd_name in ["install", "format", "lint", "check", "test"]:
             cmd, desc = commands[cmd_name]
             run_command(cmd, desc)
     elif command == "clean":
@@ -108,7 +109,7 @@ def main():
         run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
-        print("Available commands: install-dev, format, lint, check, test, clean, all")
+        print("Available commands: install, format, lint, check, test, clean, all")
         sys.exit(1)
 
 

@@ -18,9 +18,9 @@ classifiers = [
 dependencies = ["mcp>=1.14.1"]
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov"]
-dev = ["ruff"]
+dev = ["pre-commit", "ruff"]
 
+test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov"]
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
 
