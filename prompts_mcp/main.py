@@ -8,6 +8,7 @@ making them accessible to any MCP-compatible client.
 
 import logging
 import os
+import signal
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -17,6 +18,9 @@ from mcp.server.fastmcp import FastMCP
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("prompts-mcp")
+
+# Global variable to track signal count
+signal_count = 0
 
 # Directory containing prompts
 # Can be overridden with PROMPTS_DIR environment variable
@@ -114,16 +118,42 @@ def register_prompt(prompt_data: Dict[str, Any]):
     create_prompt_handler(prompt_content, prompt_name, prompt_description)
 
 
+def signal_handler(signum, frame):
+    """Handle interrupt signals gracefully."""
+    global signal_count
+    signal_count += 1
+
+    if signal_count == 1:
+        logger.info("Received interrupt signal, shutting down gracefully...")
+        logger.info("Press Ctrl+C again to force exit")
+        # Set up handler for second interrupt to force exit
+        signal.signal(signal.SIGINT, lambda s, f: os._exit(1))
+        signal.signal(signal.SIGTERM, lambda s, f: os._exit(1))
+        # Use os._exit for clean shutdown without thread cleanup issues
+        os._exit(0)
+    else:
+        logger.warning("Received second interrupt signal, forcing exit...")
+        os._exit(1)
+
+
 def main():
     """Main entry point for the MCP server."""
     logger.info("Starting prompts-mcp server with FastMCP")
     logger.info(f"Using prompts directory: {PROMPTS_DIR}")
 
+    # Set up signal handlers for graceful shutdown
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     # Load all prompts
     load_all_prompts()
 
-    # Run the server
-    app.run()
+    # Run the server directly - signal handler will handle shutdown
+    try:
+        app.run()
+    except Exception as e:
+        logger.error(f"Server error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
