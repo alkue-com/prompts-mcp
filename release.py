@@ -59,11 +59,11 @@ def main():
         print(f"Creating pre-release ({prerelease_type})")
         cmd = (
             f'uvx --from commitizen cz bump --prerelease "{prerelease_type}" '
-            f"--allow-no-commit && pdm publish --repository testpypi"
+            f"--allow-no-commit && uv publish --index testpypi"
         )
         run_command(cmd, "Creating pre-release and publishing to testpypi")
     else:
-        cmd = "uvx --from commitizen cz bump --allow-no-commit && pdm publish"
+        cmd = "uvx --from commitizen cz bump --allow-no-commit && uv publish"
         run_command(cmd, "Creating release and publishing to PyPI")
 
 
