@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file. See [standa
 
 - **changelog**: add incremental generation and standardize format
 
+## 1.5.1rc0 (2025-09-20)
+
+### Refactor
+
+- **release**: consolidate changelog generation into bump command
+
+## 1.5.0 (2025-09-20)
+
 ## 1.5.0rc2 (2025-09-20)
 
 ### Refactor
