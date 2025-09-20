@@ -25,7 +25,6 @@ def clean():
 
     # Directories to remove
     dirs_to_remove = [
-        "build",
         "dist",
         "htmlcov",
         "prompts_mcp.egg-info",
