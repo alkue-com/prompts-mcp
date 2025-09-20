@@ -85,6 +85,13 @@ def _load_pypi_config(repository: str) -> ConfigParser:
     config.read_string(DEFAULT_CONFIG)
     if PYPIRC.exists():
         config.read(PYPIRC)
+
+    # Ensure the requested repository section exists
+    if repository not in config:
+        raise ValueError(
+            f"Repository '{repository}' not found in configuration"
+        )
+
     return config
 
 

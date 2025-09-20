@@ -59,6 +59,13 @@ select = [
     "C4",  # flake8-comprehensions
     "C90", # mccabe
     "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "ARG", # flake8-unused-arguments
+    "ERA", # eradicate
+    "Q",   # flake8-quotes
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "TID", # flake8-tidy-imports
 ]
 
 [tool.ruff.lint.mccabe]
