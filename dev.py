@@ -2,6 +2,7 @@
 """Script for common development tasks - alternative to Makefile"""
 
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -30,9 +31,9 @@ def run_single_command(cmd: str) -> None:
     """Run a single command without chaining."""
     # Use shell=True only on Unix-like systems, split command on Windows
     if sys.platform == "win32":
-        # On Windows, split the command and use list format
+        # On Windows, use shlex.split for proper argument parsing
         try:
-            result = subprocess.run(cmd.split(), check=False)
+            result = subprocess.run(shlex.split(cmd), check=False)
         except FileNotFoundError:
             print(f"Command not found: {cmd}")
             sys.exit(1)

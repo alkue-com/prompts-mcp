@@ -116,7 +116,9 @@ class TestEnvironmentValidation:
     @patch("prompts_mcp.main.logger")
     @patch("sys.exit")
     @patch("prompts_mcp.main.Path")
-    @patch.dict("os.environ", {"PROMPTS_DIR": "/nonexistent/path"})
+    @patch.dict(
+        "os.environ", {"PROMPTS_DIR": str(Path("nonexistent") / "path")}
+    )
     def test_initialize_server_nonexistent_directory(
         self, mock_path_class: Any, mock_exit: Any, mock_logger: Any
     ) -> None:
@@ -141,7 +143,7 @@ class TestEnvironmentValidation:
 
     @patch("prompts_mcp.main.FastMCP")
     @patch("prompts_mcp.main.Path")
-    @patch.dict("os.environ", {"PROMPTS_DIR": "/valid/path"})
+    @patch.dict("os.environ", {"PROMPTS_DIR": str(Path("valid") / "path")})
     def test_initialize_server_success(
         self, mock_path_class: Any, mock_fastmcp: Any
     ) -> None:

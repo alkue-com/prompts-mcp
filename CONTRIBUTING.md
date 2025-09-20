@@ -5,6 +5,8 @@ if not already present.
 
 ## Development
 
+### Unix/Linux/macOS
+
 Set the `PROMPTS_DIR` environment variable:
 
     export PROMPTS_DIR="/path/to/your/prompts"
@@ -18,6 +20,22 @@ Use `./dev.py` for common tasks. Run without arguments for list of all tasks.
 To run all the tasks (sync, format, lint, check, test) at once:
 
     ./dev.py all
+
+### Windows
+
+Set the `PROMPTS_DIR` environment variable:
+
+    set PROMPTS_DIR=C:\path\to\your\prompts
+
+Run the server:
+
+    uv run prompts-mcp
+
+Use `python dev.py` for common tasks. Run without arguments for list of all tasks.
+
+To run all the tasks (sync, format, lint, check, test) at once:
+
+    python dev.py all
 
 ### Test drive
 
