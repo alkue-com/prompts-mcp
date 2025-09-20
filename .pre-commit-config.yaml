@@ -28,6 +28,12 @@ repos:
       - id: destroyed-symlinks
       - id: check-executables-have-shebangs
 
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 3.4.0
+    hooks:
+      - id: editorconfig-checker
+        alias: ec
+
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.24.1
     hooks:
