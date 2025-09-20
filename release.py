@@ -79,30 +79,53 @@ def clear_dist_directory() -> None:
         print("dist/ directory does not exist, skipping clear")
 
 
-def build_uv_publish_command(repository: str = "pypi") -> list[str]:
-    """Build uv publish command with credentials from .pypirc."""
+def _load_pypi_config(repository: str) -> ConfigParser:
+    """Load PyPI configuration from .pypirc or use defaults."""
     config = ConfigParser()
     config.read_string(DEFAULT_CONFIG)
     if PYPIRC.exists():
         config.read(PYPIRC)
+    return config
 
+
+def _add_token_auth(opts: list[str], password: str) -> None:
+    """Add token authentication to options."""
+    if password:
+        opts.append(f"--token={password}")
+
+
+def _add_username_auth(
+    opts: list[str], user: str, password: str | None
+) -> None:
+    """Add username/password authentication to options."""
+    opts.append(f"--username={user}")
+    if password:
+        opts.append(f"--password={password}")
+
+
+def _add_repository_url(opts: list[str], url: str | None) -> None:
+    """Add repository URL to options if not empty."""
+    if url and opts:
+        opts.append(f"--publish-url={url}")
+
+
+def build_uv_publish_command(repository: str = "pypi") -> list[str]:
+    """Build uv publish command with credentials from .pypirc."""
+    config = _load_pypi_config(repository)
     settings = config[repository]
-    opts = []
+    opts: list[str] = []
 
     if user := settings.get("username"):
         password = settings.get("password")
 
         if "__token__" in user:
             if password:
-                opts.append(f"--token={password}")
+                _add_token_auth(opts, password)
         else:
-            opts.append(f"--username={user}")
-            if password:
-                opts.append(f"--password={password}")
+            _add_username_auth(opts, user, password)
 
         url = settings.get("repository")
-        if url and opts:
-            opts.append(f"--publish-url={url}")
+        _add_repository_url(opts, url)
 
     return ["uv", "publish"] + opts
 

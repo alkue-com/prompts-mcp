@@ -56,33 +56,63 @@ class PromptsMCPServer:
         # Create the FastMCP server
         self.app = FastMCP("prompts-mcp")
 
+    def _validate_prompts_directory(self) -> Path | None:
+        """Validate that prompts directory is initialized and return it."""
+        if self.prompts_dir is None:
+            logger.error("PROMPTS_DIR is not initialized")
+            return None
+        return self.prompts_dir
+
+    def _should_skip_file(self, prompt_file: Path) -> bool:
+        """Check if a prompt file should be skipped."""
+        return prompt_file.name == "README.md"
+
+    def _load_single_prompt(self, prompt_file: Path) -> dict[str, Any] | None:
+        """Load a single prompt file and return its data."""
+        try:
+            return load_prompt_file(prompt_file)
+        except (OSError, ValueError, UnicodeDecodeError) as e:
+            logger.error("Error loading prompt file %s: %s", prompt_file, e)
+            return None
+
     def load_all_prompts(self) -> None:
         """Load all prompts from the prompts directory and register them
         individually."""
         prompt_count = 0
-        if self.prompts_dir is None:
-            logger.error("PROMPTS_DIR is not initialized")
+        prompts_dir = self._validate_prompts_directory()
+
+        if prompts_dir is None:
             return
 
-        # Copy instance variables to local variables for efficiency
-        prompts_dir = self.prompts_dir
-        log = logger
-
         for prompt_file in prompts_dir.glob("*.md"):
-            if prompt_file.name == "README.md":
+            if self._should_skip_file(prompt_file):
                 continue
 
-            try:
-                prompt_data = load_prompt_file(prompt_file)
-
-                # Register each prompt individually with FastMCP
+            prompt_data = self._load_single_prompt(prompt_file)
+            if prompt_data is not None:
                 self.register_prompt(prompt_data)
                 prompt_count += 1
 
-            except (OSError, ValueError, UnicodeDecodeError) as e:
-                log.error("Error loading prompt file %s: %s", prompt_file, e)
+        logger.info("Loaded %d prompts from %s", prompt_count, prompts_dir)
 
-        log.info("Loaded %d prompts from %s", prompt_count, prompts_dir)
+    def _validate_app_initialization(self) -> None:
+        """Validate that FastMCP app is initialized."""
+        if self.app is None:
+            raise RuntimeError("FastMCP app is not initialized")
+
+    def _create_prompt_handler(self, content: str) -> Any:
+        """Create a prompt handler function for the given content."""
+
+        async def prompt_handler(
+            arguments: dict[str, Any] | None = None,
+        ) -> str:
+            result = content
+            # Add input if provided
+            if arguments and "input" in arguments and arguments["input"]:
+                result += f"\n\n{arguments['input']}"
+            return result
+
+        return prompt_handler
 
     def register_prompt(self, prompt_data: dict[str, Any]) -> None:
         """Register an individual prompt with FastMCP."""
@@ -90,28 +120,14 @@ class PromptsMCPServer:
         prompt_content = prompt_data["content"]
         prompt_description = prompt_data["description"]
 
-        # Create a prompt handler function for this specific prompt
-        def create_prompt_handler(
-            content: str, name: str, description: str
-        ) -> None:
-            if self.app is None:
-                raise RuntimeError("FastMCP app is not initialized")
+        self._validate_app_initialization()
+        prompt_handler = self._create_prompt_handler(prompt_content)
 
-            # Define the prompt handler function first
-            async def prompt_handler(
-                arguments: dict[str, Any] | None = None,
-            ) -> str:
-                result = content
-                # Add input if provided
-                if arguments and "input" in arguments and arguments["input"]:
-                    result += f"\n\n{arguments['input']}"
-                return result
-
-            # Register the prompt with FastMCP
-            self.app.prompt(name=name, description=description)(prompt_handler)
-
-        # Register the prompt
-        create_prompt_handler(prompt_content, prompt_name, prompt_description)
+        # Register the prompt with FastMCP
+        assert self.app is not None  # Validated in _validate_app_initialization
+        self.app.prompt(name=prompt_name, description=prompt_description)(
+            prompt_handler
+        )
 
     def signal_handler(self, _signum: int, _frame: Any) -> None:
         """Handle interrupt signals gracefully."""
@@ -132,20 +148,16 @@ class PromptsMCPServer:
             os._exit(1)
 
 
-def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
-    """Load and parse a prompt file."""
-    content = prompt_path.read_text(encoding="utf-8")
+def _extract_title_from_filename(prompt_path: Path) -> str:
+    """Extract title from filename converting _ to spaces."""
+    return prompt_path.stem.replace("_", " ").title()
 
-    # Extract title from filename (remove .md extension and convert
-    # underscores to spaces)
-    title = prompt_path.stem.replace("_", " ").title()
 
-    # Parse the content to extract description
-    lines = content.split("\n")
+def _extract_description_from_identity_section(lines: list[str]) -> str:
+    """Extract description from IDENTITY AND PURPOSE section."""
     description = ""
-
-    # Look for IDENTITY and PURPOSE section to extract description
     in_identity_section = False
+
     for line in lines:
         if line.strip().upper().startswith("# IDENTITY AND PURPOSE"):
             in_identity_section = True
@@ -155,17 +167,41 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
         if in_identity_section and line.strip():
             description += line.strip() + " "
 
-    # If no description found, use first non-empty line
-    if not description.strip():
-        for line in lines:
-            if line.strip() and not line.startswith("#"):
-                description = line.strip()[:100] + "..."
-                break
+    return description.strip()
+
+
+def _extract_fallback_description(lines: list[str]) -> str:
+    """Extract fallback description from first non-empty line."""
+    for line in lines:
+        if line.strip() and not line.startswith("#"):
+            return line.strip()[:100] + "..."
+    return ""
+
+
+def _extract_description_from_content(content: str) -> str:
+    """Extract description from prompt content."""
+    lines = content.split("\n")
+
+    # Try to extract from IDENTITY AND PURPOSE section first
+    description = _extract_description_from_identity_section(lines)
+
+    # If no description found, use fallback
+    if not description:
+        description = _extract_fallback_description(lines)
+
+    return description
+
+
+def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
+    """Load and parse a prompt file."""
+    content = prompt_path.read_text(encoding="utf-8")
+    title = _extract_title_from_filename(prompt_path)
+    description = _extract_description_from_content(content)
 
     return {
         "name": prompt_path.stem,
         "title": title,
-        "description": description.strip(),
+        "description": description,
         "content": content,
     }
 
