@@ -18,7 +18,14 @@ classifiers = [
 dependencies = ["mcp>=1.14.1"]
 
 [dependency-groups]
-dev = ["mypy", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock", "ruff"]
+dev = [
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "ruff",
+]
 commit = ["commitizen", "pre-commit"]
 
 [project.scripts]

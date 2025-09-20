@@ -7,77 +7,95 @@ with proper mocking to avoid import-time side effects.
 
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+
+
+def create_test_server(prompts_dir: Path | None = None, app: Any = None) -> Any:
+    """Create a test server instance with mocked dependencies."""
+    from prompts_mcp.main import PromptsMCPServer
+
+    # Create a mock server instance
+    server = PromptsMCPServer.__new__(PromptsMCPServer)
+    server.prompts_dir = prompts_dir
+    server.app = app
+    server.signal_count = 0
+
+    return server
 
 
 @pytest.mark.unit
 class TestMainFunction:
     """Test cases for the main function."""
 
-    @patch("prompts_mcp.main.load_all_prompts")
-    @patch("prompts_mcp.main.app")
+    @patch("prompts_mcp.main.PromptsMCPServer")
     @patch("prompts_mcp.main.signal.signal")
     @patch("prompts_mcp.main.logger")
-    @patch("prompts_mcp.main.initialize_server")
     def test_main_success(
         self,
-        mock_init_server: Any,
         mock_logger: Any,
         mock_signal: Any,
-        mock_app: Any,
-        mock_load_prompts: Any,
+        mock_server_class: Any,
     ) -> None:
         """Test successful main function execution."""
-        # Set up the mocked app and PROMPTS_DIR
-        import prompts_mcp.main
-
-        prompts_mcp.main.app = mock_app
-        prompts_mcp.main.PROMPTS_DIR = Path("/test/prompts")
+        # Create a mock server instance
+        mock_server = MagicMock()
+        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.app = MagicMock()
+        mock_server_class.return_value = mock_server
 
         from prompts_mcp.main import main
 
         main()
 
-        mock_init_server.assert_called_once()
+        # Verify that server was created
+        mock_server_class.assert_called_once()
+
+        # Verify that methods were called
         mock_logger.info.assert_any_call(
             "Starting prompts-mcp server with FastMCP"
         )
         mock_signal.assert_called()
-        mock_load_prompts.assert_called_once()
-        mock_app.run.assert_called_once()
+        mock_server.load_all_prompts.assert_called_once()
+        mock_server.app.run.assert_called_once()
 
-    @patch("prompts_mcp.main.load_all_prompts")
-    @patch("prompts_mcp.main.app")
+    @patch("prompts_mcp.main.PromptsMCPServer")
     @patch("prompts_mcp.main.signal.signal")
     @patch("prompts_mcp.main.logger")
-    @patch("prompts_mcp.main.initialize_server")
     @patch("sys.exit")
     def test_main_app_error(
         self,
         mock_exit: Any,
-        mock_init_server: Any,
         mock_logger: Any,
         mock_signal: Any,
-        mock_app: Any,
-        mock_load_prompts: Any,
+        mock_server_class: Any,
     ) -> None:
         """Test main function handles app.run errors."""
-        mock_app.run.side_effect = Exception("Server error")
+        # Mock sys.exit to raise SystemExit to prevent actual exit
+        mock_exit.side_effect = SystemExit(1)
 
-        # Set up the mocked app and PROMPTS_DIR
-        import prompts_mcp.main
-
-        prompts_mcp.main.app = mock_app
-        prompts_mcp.main.PROMPTS_DIR = Path("/test/prompts")
+        # Create a mock server instance with an app that raises an error
+        mock_server = MagicMock()
+        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.app = MagicMock()
+        mock_server.app.run.side_effect = RuntimeError("Server error")
+        mock_server_class.return_value = mock_server
 
         from prompts_mcp.main import main
 
-        main()
+        with pytest.raises(SystemExit):
+            main()
 
-        mock_init_server.assert_called_once()
-        mock_logger.error.assert_called_with("Server error: Server error")
+        # Verify that server was created
+        mock_server_class.assert_called_once()
+
+        # Verify error handling
+        mock_logger.error.assert_called_once()
+        error_call = mock_logger.error.call_args
+        assert error_call[0][0] == "Server error: %s"
+        assert isinstance(error_call[0][1], RuntimeError)
+        assert str(error_call[0][1]) == "Server error"
         mock_exit.assert_called_once_with(1)
 
 
@@ -91,14 +109,15 @@ class TestEnvironmentValidation:
     def test_initialize_server_missing_prompts_dir(
         self, mock_exit: Any, mock_logger: Any
     ) -> None:
-        """Test initialize_server fails when PROMPTS_DIR is not set."""
+        """Test _initialize_server fails when PROMPTS_DIR is not set."""
         # Mock sys.exit to raise SystemExit to prevent actual exit
         mock_exit.side_effect = SystemExit(1)
 
-        from prompts_mcp.main import initialize_server
+        from prompts_mcp.main import PromptsMCPServer
 
         with pytest.raises(SystemExit):
-            initialize_server()
+            # Create server instance which will call _initialize_server
+            PromptsMCPServer()
 
         mock_logger.error.assert_called_once()
         error_message = mock_logger.error.call_args[0][0]
@@ -112,7 +131,7 @@ class TestEnvironmentValidation:
     def test_initialize_server_nonexistent_directory(
         self, mock_path_class: Any, mock_exit: Any, mock_logger: Any
     ) -> None:
-        """Test initialize_server fails when PROMPTS_DIR doesn't exist."""
+        """Test _initialize_server fails when PROMPTS_DIR doesn't exist."""
         # Mock sys.exit to raise SystemExit to prevent actual exit
         mock_exit.side_effect = SystemExit(1)
 
@@ -122,10 +141,11 @@ class TestEnvironmentValidation:
         mock_path.resolve.return_value = mock_path
         mock_path.exists.return_value = False
 
-        from prompts_mcp.main import initialize_server
+        from prompts_mcp.main import PromptsMCPServer
 
         with pytest.raises(SystemExit):
-            initialize_server()
+            # Create server instance which will call _initialize_server
+            PromptsMCPServer()
 
         mock_logger.error.assert_called_once()
         error_message = mock_logger.error.call_args[0][0]
@@ -138,35 +158,35 @@ class TestEnvironmentValidation:
     def test_initialize_server_success(
         self, mock_path_class: Any, mock_fastmcp: Any
     ) -> None:
-        """Test successful initialize_server execution."""
+        """Test successful _initialize_server execution."""
         # Mock Path to return a path that exists
         mock_path = mock_path_class.return_value
         mock_path.expanduser.return_value = mock_path
         mock_path.resolve.return_value = mock_path
         mock_path.exists.return_value = True
 
-        from prompts_mcp.main import initialize_server
+        from prompts_mcp.main import PromptsMCPServer
 
-        initialize_server()
+        # Create server instance which will call _initialize_server
+        server = PromptsMCPServer()
 
         mock_fastmcp.assert_called_once_with("prompts-mcp")
+        assert server.prompts_dir == mock_path
+        assert server.app is not None
 
 
 @pytest.mark.unit
 class TestLoadAllPromptsEdgeCases:
-    """Test edge cases for load_all_prompts function."""
+    """Test edge cases for load_all_prompts method."""
 
     @patch("prompts_mcp.main.logger")
     def test_load_all_prompts_prompts_dir_none(self, mock_logger: Any) -> None:
-        """Test load_all_prompts when PROMPTS_DIR is None."""
-        import prompts_mcp.main
+        """Test load_all_prompts when prompts_dir is None."""
+        # Create test server instance with None prompts_dir
+        server = create_test_server(prompts_dir=None)
 
-        # Set PROMPTS_DIR to None
-        prompts_mcp.main.PROMPTS_DIR = None
-
-        from prompts_mcp.main import load_all_prompts
-
-        load_all_prompts()
+        # Call the method
+        server.load_all_prompts()
 
         mock_logger.error.assert_called_once_with(
             "PROMPTS_DIR is not initialized"
@@ -175,17 +195,12 @@ class TestLoadAllPromptsEdgeCases:
 
 @pytest.mark.unit
 class TestRegisterPromptEdgeCases:
-    """Test edge cases for register_prompt function."""
+    """Test edge cases for register_prompt method."""
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_app_none(self, mock_app: Any) -> None:
+    def test_register_prompt_app_none(self) -> None:
         """Test register_prompt when app is None."""
-        import prompts_mcp.main
-
-        # Set app to None
-        prompts_mcp.main.app = None
-
-        from prompts_mcp.main import register_prompt
+        # Create test server instance with None app
+        server = create_test_server(app=None)
 
         prompt_data = {
             "name": "test_prompt",
@@ -196,43 +211,43 @@ class TestRegisterPromptEdgeCases:
         with pytest.raises(
             RuntimeError, match="FastMCP app is not initialized"
         ):
-            register_prompt(prompt_data)
+            server.register_prompt(prompt_data)
 
 
 @pytest.mark.unit
 class TestMainEdgeCases:
     """Test edge cases for main function."""
 
-    @patch("prompts_mcp.main.load_all_prompts")
+    @patch("prompts_mcp.main.PromptsMCPServer")
     @patch("prompts_mcp.main.signal.signal")
     @patch("prompts_mcp.main.logger")
-    @patch("prompts_mcp.main.initialize_server")
     @patch("sys.exit")
     def test_main_app_none(
         self,
         mock_exit: Any,
-        mock_init_server: Any,
         mock_logger: Any,
         mock_signal: Any,
-        mock_load_prompts: Any,
+        mock_server_class: Any,
     ) -> None:
         """Test main function when app is None."""
-        # Set up the mocked app and PROMPTS_DIR
-        import prompts_mcp.main
+        # Mock sys.exit to raise SystemExit to prevent actual exit
+        mock_exit.side_effect = SystemExit(1)
 
-        # Set app to None after initialize_server is called
-        def mock_init_server_side_effect() -> None:
-            prompts_mcp.main.app = None
-            prompts_mcp.main.PROMPTS_DIR = Path("/test/prompts")
-
-        mock_init_server.side_effect = mock_init_server_side_effect
+        # Create a mock server instance with None app
+        mock_server = MagicMock()
+        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.app = None
+        mock_server_class.return_value = mock_server
 
         from prompts_mcp.main import main
 
-        main()
+        with pytest.raises(SystemExit):
+            main()
 
-        mock_init_server.assert_called_once()
-        # Check that the first error call is the expected one
+        # Verify that server was created
+        mock_server_class.assert_called_once()
+
+        # Check that the error call is the expected one
         mock_logger.error.assert_any_call("FastMCP app is not initialized")
         # Should exit due to app being None
         mock_exit.assert_called_with(1)

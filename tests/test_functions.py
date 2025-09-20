@@ -9,9 +9,22 @@ import signal
 import tempfile
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+
+
+def create_test_server(prompts_dir: Path | None = None, app: Any = None) -> Any:
+    """Create a test server instance with mocked dependencies."""
+    from prompts_mcp.main import PromptsMCPServer
+
+    # Create a mock server instance
+    server = PromptsMCPServer.__new__(PromptsMCPServer)
+    server.prompts_dir = prompts_dir
+    server.app = app
+    server.signal_count = 0
+
+    return server
 
 
 @pytest.mark.unit
@@ -124,13 +137,10 @@ Just a simple prompt for testing purposes.
 
 @pytest.mark.unit
 class TestLoadAllPromptsFunction:
-    """Test cases for the load_all_prompts function."""
+    """Test cases for the load_all_prompts method."""
 
-    @patch("prompts_mcp.main.register_prompt")
-    @patch("prompts_mcp.main.PROMPTS_DIR")
-    def test_load_all_prompts_success(
-        self, mock_prompts_dir: Any, mock_register_prompt: Any
-    ) -> None:
+    @patch("prompts_mcp.main.load_prompt_file")
+    def test_load_all_prompts_success(self, mock_load_prompt_file: Any) -> None:
         """Test successful loading of all prompts."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -142,23 +152,35 @@ class TestLoadAllPromptsFunction:
             prompt2 = prompts_dir / "test_prompt_2.md"
             prompt2.write_text("# Test Prompt 2\n\nContent 2.")
 
-            mock_prompts_dir.glob.return_value = [prompt1, prompt2]
+            # Mock the load_prompt_file function to return test data
+            mock_load_prompt_file.side_effect = [
+                {
+                    "name": "test_prompt_1",
+                    "content": "Content 1",
+                    "description": "Test Prompt 1",
+                },
+                {
+                    "name": "test_prompt_2",
+                    "content": "Content 2",
+                    "description": "Test Prompt 2",
+                },
+            ]
 
-            # Import and set up the module properly
-            import prompts_mcp.main
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
 
-            prompts_mcp.main.PROMPTS_DIR = mock_prompts_dir
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
 
-            from prompts_mcp.main import load_all_prompts
+            # Call the method
+            server.load_all_prompts()
 
-            load_all_prompts()
+            # Verify that register_prompt was called twice
+            assert server.register_prompt.call_count == 2
 
-            assert mock_register_prompt.call_count == 2
-
-    @patch("prompts_mcp.main.register_prompt")
-    @patch("prompts_mcp.main.PROMPTS_DIR")
+    @patch("prompts_mcp.main.load_prompt_file")
     def test_load_all_prompts_skips_readme(
-        self, mock_prompts_dir: Any, mock_register_prompt: Any
+        self, mock_load_prompt_file: Any
     ) -> None:
         """Test that README.md files are skipped."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -170,67 +192,79 @@ class TestLoadAllPromptsFunction:
             readme = prompts_dir / "README.md"
             readme.write_text("# README\n\nThis should be ignored.")
 
-            mock_prompts_dir.glob.return_value = [prompt1, readme]
+            # Mock the load_prompt_file function to return test data
+            mock_load_prompt_file.return_value = {
+                "name": "test_prompt_1",
+                "content": "Content 1",
+                "description": "Test Prompt 1",
+            }
 
-            # Import and set up the module properly
-            import prompts_mcp.main
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
 
-            prompts_mcp.main.PROMPTS_DIR = mock_prompts_dir
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
 
-            from prompts_mcp.main import load_all_prompts
+            # Call the method
+            server.load_all_prompts()
 
-            load_all_prompts()
+            # Verify that register_prompt was called only once
+            # (README.md should be skipped)
+            assert server.register_prompt.call_count == 1
 
-            assert mock_register_prompt.call_count == 1
-
-    @patch("prompts_mcp.main.register_prompt")
-    @patch("prompts_mcp.main.PROMPTS_DIR")
+    @patch("prompts_mcp.main.load_prompt_file")
     @patch("prompts_mcp.main.logger")
     def test_load_all_prompts_handles_errors(
-        self, mock_logger: Any, mock_prompts_dir: Any, mock_register_prompt: Any
+        self, mock_logger: Any, mock_load_prompt_file: Any
     ) -> None:
         """Test that errors in loading individual prompts are handled
         gracefully."""
-        mock_prompts_dir.glob.return_value = [Path("/nonexistent/prompt.md")]
-        mock_register_prompt.side_effect = Exception("Test error")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+            prompt_file = prompts_dir / "test_prompt.md"
+            prompt_file.write_text("# Test Prompt\n\nContent.")
 
-        prompts_mcp.main.PROMPTS_DIR = mock_prompts_dir
+            # Mock load_prompt_file to raise an exception that should be caught
+            mock_load_prompt_file.side_effect = OSError("Test error")
 
-        from prompts_mcp.main import load_all_prompts
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
 
-        load_all_prompts()
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
 
-        mock_logger.error.assert_called_once()
+            # Call the method
+            server.load_all_prompts()
 
-    @patch("prompts_mcp.main.register_prompt")
-    @patch("prompts_mcp.main.PROMPTS_DIR")
-    def test_load_all_prompts_no_files(
-        self, mock_prompts_dir: Any, mock_register_prompt: Any
-    ) -> None:
+            # Verify that error was logged
+            mock_logger.error.assert_called_once()
+
+    def test_load_all_prompts_no_files(self) -> None:
         """Test loading when no prompt files exist."""
-        mock_prompts_dir.glob.return_value = []
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
 
-        prompts_mcp.main.PROMPTS_DIR = mock_prompts_dir
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
 
-        from prompts_mcp.main import load_all_prompts
+            # Call the method
+            server.load_all_prompts()
 
-        load_all_prompts()
-
-        mock_register_prompt.assert_not_called()
+            # Verify that register_prompt was not called
+            server.register_prompt.assert_not_called()
 
 
 @pytest.mark.unit
 class TestRegisterPromptFunction:
-    """Test cases for the register_prompt function."""
+    """Test cases for the register_prompt method."""
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_success(self, mock_app: Any) -> None:
+    def test_register_prompt_success(self) -> None:
         """Test successful prompt registration."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -239,14 +273,14 @@ class TestRegisterPromptFunction:
             "content": "# Test Prompt\n\nThis is a test prompt content.",
         }
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+        # Create mock app
+        mock_app = MagicMock()
 
-        prompts_mcp.main.app = mock_app
+        # Create test server instance
+        server = create_test_server(app=mock_app)
 
-        from prompts_mcp.main import register_prompt
-
-        register_prompt(sample_prompt_data)
+        # Call the method
+        server.register_prompt(sample_prompt_data)
 
         # Verify that app.prompt was called
         mock_app.prompt.assert_called_once()
@@ -258,8 +292,7 @@ class TestRegisterPromptFunction:
             decorator_call[1]["description"] == "A test prompt for unit testing"
         )
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_with_input_argument(self, mock_app: Any) -> None:
+    def test_register_prompt_with_input_argument(self) -> None:
         """Test that the registered prompt handler accepts input arguments."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -268,20 +301,20 @@ class TestRegisterPromptFunction:
             "content": "# Test Prompt\n\nThis is a test prompt content.",
         }
 
+        # Create mock app
+        mock_app = MagicMock()
+
         # Create a mock decorator that returns the function unchanged
         def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server(app=mock_app)
 
-        prompts_mcp.main.app = mock_app
-
-        from prompts_mcp.main import register_prompt
-
-        register_prompt(sample_prompt_data)
+        # Call the method
+        server.register_prompt(sample_prompt_data)
 
         # Verify that app.prompt was called
         mock_app.prompt.assert_called_once()
@@ -293,8 +326,7 @@ class TestRegisterPromptFunction:
             decorator_call[1]["description"] == "A test prompt for unit testing"
         )
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_handler_with_input(self, mock_app: Any) -> None:
+    def test_register_prompt_handler_with_input(self) -> None:
         """Test that the registered prompt handler works with input args."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -302,6 +334,9 @@ class TestRegisterPromptFunction:
             "description": "A test prompt for unit testing",
             "content": "# Test Prompt\n\nThis is a test prompt content.",
         }
+
+        # Create mock app
+        mock_app = MagicMock()
 
         # Create a mock decorator that captures the function
         captured_func = None
@@ -313,14 +348,11 @@ class TestRegisterPromptFunction:
 
         mock_app.prompt.return_value = mock_decorator
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server(app=mock_app)
 
-        prompts_mcp.main.app = mock_app
-
-        from prompts_mcp.main import register_prompt
-
-        register_prompt(sample_prompt_data)
+        # Call the method
+        server.register_prompt(sample_prompt_data)
 
         # Get the handler function that was registered
         handler_func = captured_func
@@ -355,10 +387,7 @@ class TestRegisterPromptFunction:
         else:
             pytest.skip("Handler function not captured by mock decorator")
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_without_input_argument(
-        self, mock_app: Any
-    ) -> None:
+    def test_register_prompt_without_input_argument(self) -> None:
         """Test that the registered prompt handler works without input
         arguments."""
         sample_prompt_data = {
@@ -368,20 +397,20 @@ class TestRegisterPromptFunction:
             "content": "# Test Prompt\n\nThis is a test prompt content.",
         }
 
+        # Create mock app
+        mock_app = MagicMock()
+
         # Create a mock decorator that returns the function unchanged
         def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server(app=mock_app)
 
-        prompts_mcp.main.app = mock_app
-
-        from prompts_mcp.main import register_prompt
-
-        register_prompt(sample_prompt_data)
+        # Call the method
+        server.register_prompt(sample_prompt_data)
 
         # Verify that app.prompt was called
         mock_app.prompt.assert_called_once()
@@ -393,8 +422,7 @@ class TestRegisterPromptFunction:
             decorator_call[1]["description"] == "A test prompt for unit testing"
         )
 
-    @patch("prompts_mcp.main.app")
-    def test_register_prompt_with_empty_input(self, mock_app: Any) -> None:
+    def test_register_prompt_with_empty_input(self) -> None:
         """Test that empty input doesn't modify the result."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -403,20 +431,20 @@ class TestRegisterPromptFunction:
             "content": "# Test Prompt\n\nThis is a test prompt content.",
         }
 
+        # Create mock app
+        mock_app = MagicMock()
+
         # Create a mock decorator that returns the function unchanged
         def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
 
-        # Import and set up the module properly
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server(app=mock_app)
 
-        prompts_mcp.main.app = mock_app
-
-        from prompts_mcp.main import register_prompt
-
-        register_prompt(sample_prompt_data)
+        # Call the method
+        server.register_prompt(sample_prompt_data)
 
         # Verify that app.prompt was called
         mock_app.prompt.assert_called_once()
@@ -431,7 +459,7 @@ class TestRegisterPromptFunction:
 
 @pytest.mark.unit
 class TestSignalHandlerFunction:
-    """Test cases for the signal_handler function."""
+    """Test cases for the signal_handler method."""
 
     @patch("prompts_mcp.main.logger")
     @patch("os._exit")
@@ -439,15 +467,12 @@ class TestSignalHandlerFunction:
         self, mock_exit: Any, mock_logger: Any
     ) -> None:
         """Test handling of first interrupt signal."""
-        # Reset global signal count
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server()
+        server.signal_count = 0
 
-        prompts_mcp.main.signal_count = 0
-        prompts_mcp.main.logger = mock_logger
-
-        from prompts_mcp.main import signal_handler
-
-        signal_handler(signal.SIGINT, None)
+        # Call the signal handler method
+        server.signal_handler(signal.SIGINT, None)
 
         # Check that the first log message was called
         mock_logger.info.assert_any_call(
@@ -461,15 +486,12 @@ class TestSignalHandlerFunction:
         self, mock_exit: Any, mock_logger: Any
     ) -> None:
         """Test handling of second interrupt signal."""
-        # Set signal count to 1 to simulate second interrupt
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server()
+        server.signal_count = 1
 
-        prompts_mcp.main.signal_count = 1
-        prompts_mcp.main.logger = mock_logger
-
-        from prompts_mcp.main import signal_handler
-
-        signal_handler(signal.SIGINT, None)
+        # Call the signal handler method
+        server.signal_handler(signal.SIGINT, None)
 
         mock_logger.warning.assert_called_with(
             "Received second interrupt signal, forcing exit..."
@@ -482,13 +504,12 @@ class TestSignalHandlerFunction:
         self, mock_exit: Any, mock_signal: Any
     ) -> None:
         """Test that signal handler sets up handler for second interrupt."""
-        import prompts_mcp.main
+        # Create test server instance
+        server = create_test_server()
+        server.signal_count = 0
 
-        prompts_mcp.main.signal_count = 0
-
-        from prompts_mcp.main import signal_handler
-
-        signal_handler(signal.SIGINT, None)
+        # Call the signal handler method
+        server.signal_handler(signal.SIGINT, None)
 
         # Should set up new signal handlers
         assert mock_signal.call_count >= 2

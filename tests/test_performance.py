@@ -5,7 +5,6 @@ Performance tests for prompts-mcp package.
 import time
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
 
 import pytest
 
@@ -36,17 +35,25 @@ class TestPerformance:
             prompt_file = temp_prompts_dir / f"prompt_{i}.md"
             prompt_file.write_text(f"# Prompt {i}\n\nContent for prompt {i}.")
 
-        with patch("prompts_mcp.main.PROMPTS_DIR", temp_prompts_dir):
-            with patch("prompts_mcp.main.register_prompt"):
-                from prompts_mcp.main import load_all_prompts
+        # Create test server instance
+        from prompts_mcp.main import PromptsMCPServer
 
-                start_time = time.time()
-                load_all_prompts()
-                end_time = time.time()
+        server = PromptsMCPServer.__new__(PromptsMCPServer)
+        server.prompts_dir = temp_prompts_dir
+        server.app = None
+        server.signal_count = 0
 
-                # Should complete loading 50 prompts in reasonable time
-                # (< 2 seconds)
-                assert (end_time - start_time) < 2.0
+        # Mock the register_prompt method
+        from unittest.mock import patch
+
+        with patch.object(server, "register_prompt"):
+            start_time = time.time()
+            server.load_all_prompts()
+            end_time = time.time()
+
+            # Should complete loading 50 prompts in reasonable time
+            # (< 2 seconds)
+            assert (end_time - start_time) < 2.0
 
     def test_memory_usage_with_large_files(self) -> None:
         """Test memory usage with large prompt files."""

@@ -2,13 +2,25 @@
 Integration tests for prompts-mcp package.
 """
 
-import os
 import tempfile
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+
+
+def create_test_server(prompts_dir: Path | None = None, app: Any = None) -> Any:
+    """Create a test server instance with mocked dependencies."""
+    from prompts_mcp.main import PromptsMCPServer
+
+    # Create a mock server instance
+    server = PromptsMCPServer.__new__(PromptsMCPServer)
+    server.prompts_dir = prompts_dir
+    server.app = app
+    server.signal_count = 0
+
+    return server
 
 
 @pytest.mark.integration
@@ -40,28 +52,24 @@ class TestIntegration:
             for filename, content in prompt_files:
                 (prompts_dir / filename).write_text(content)
 
-            # Mock the environment and PROMPTS_DIR
-            with patch.dict(os.environ, {"PROMPTS_DIR": str(prompts_dir)}):
-                with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch(
-                        "prompts_mcp.main.register_prompt"
-                    ) as mock_register:
-                        # Test loading all prompts
-                        from prompts_mcp.main import load_all_prompts
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
 
-                        load_all_prompts()
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
 
-                        # Should register 2 prompts (excluding README.md)
-                        assert mock_register.call_count == 2
+            # Test loading all prompts
+            server.load_all_prompts()
 
-                        # Verify the registered prompts
-                        calls = mock_register.call_args_list
-                        registered_names = [
-                            call[0][0]["name"] for call in calls
-                        ]
-                        assert "system_prompt" in registered_names
-                        assert "user_prompt" in registered_names
-                        assert "README" not in registered_names
+            # Should register 2 prompts (excluding README.md)
+            assert server.register_prompt.call_count == 2
+
+            # Verify the registered prompts
+            calls = server.register_prompt.call_args_list
+            registered_names = [call[0][0]["name"] for call in calls]
+            assert "system_prompt" in registered_names
+            assert "user_prompt" in registered_names
+            assert "README" not in registered_names
 
     def test_prompt_file_parsing_variations(self) -> None:
         """Test various prompt file formats and edge cases."""
@@ -171,20 +179,21 @@ Use carefully.
                 return original_read_text(self, encoding)
 
             with patch.object(Path, "read_text", mock_read_text):
-                with patch("prompts_mcp.main.PROMPTS_DIR", prompts_dir):
-                    with patch(
-                        "prompts_mcp.main.register_prompt"
-                    ) as mock_register:
-                        with patch("prompts_mcp.main.logger") as mock_logger:
-                            from prompts_mcp.main import load_all_prompts
+                # Create test server instance
+                server = create_test_server(prompts_dir=prompts_dir)
 
-                            load_all_prompts()
+                # Mock the register_prompt method
+                server.register_prompt = MagicMock()
 
-                            # Should log error for invalid file
-                            mock_logger.error.assert_called()
+                with patch("prompts_mcp.main.logger") as mock_logger:
+                    # Test loading all prompts
+                    server.load_all_prompts()
 
-                            # Should still register the valid file
-                            mock_register.assert_called_once()
+                    # Should log error for invalid file
+                    mock_logger.error.assert_called()
+
+                    # Should still register the valid file
+                    server.register_prompt.assert_called_once()
 
     def test_large_prompt_files(self) -> None:
         """Test handling of large prompt files."""
