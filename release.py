@@ -126,7 +126,15 @@ def main():
         print(f"Creating pre-release ({prerelease_type})")
 
         # Run changelog command for prerelease
-        changelog_cmd = ["uv", "run", "cz", "changelog", "--incremental"]
+        changelog_cmd = [
+            "uv",
+            "run",
+            "cz",
+            "changelog",
+            "--merge-prerelease",
+            "--unreleased-version",
+            prerelease_type,
+        ]
         run_command(
             " ".join(changelog_cmd), "Generating changelog for prerelease"
         )
@@ -162,7 +170,6 @@ def main():
             "cz",
             "changelog",
             "--merge-prerelease",
-            "--incremental",
         ]
         run_command(" ".join(changelog_cmd), "Generating changelog for release")
 
