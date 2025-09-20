@@ -26,8 +26,8 @@ Works with any MCP client supporting server-side prompts.
 
 The location of the `mcp.json` file depends on your client and operating system.
 
-**On Windows**, use either forward slashes (`/`) or escaped backslashes (`\\`)
-in `PROMPTS_DIR`.
+**Note for Windows users:** You can use either forward slashes (`/`) or
+escaped backslashes (`\\`) in `PROMPTS_DIR`.
 
 ### Configuration
 

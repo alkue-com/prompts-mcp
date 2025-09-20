@@ -68,7 +68,8 @@ Use it in [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp
 
 Use `release.py` to build and publish the source dist and the wheel.
 
-**Note:** The release script looks for PyPI credentials in `~/.pypirc`.
+**Note:** The release script looks for PyPI credentials in `~/.pypirc`
+(macOS & Linux distros) or `%USERPROFILE%\.pypirc` (Windows).
 
 Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
 
