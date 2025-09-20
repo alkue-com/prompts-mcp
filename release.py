@@ -132,6 +132,7 @@ def main():
             "cz",
             "changelog",
             "--merge-prerelease",
+            "--incremental",
             "--unreleased-version",
             prerelease_type,
         ]
@@ -170,6 +171,7 @@ def main():
             "cz",
             "changelog",
             "--merge-prerelease",
+            "--incremental",
         ]
         run_command(" ".join(changelog_cmd), "Generating changelog for release")
 
