@@ -148,7 +148,7 @@ def register_prompt(prompt_data: dict[str, Any]) -> None:
     create_prompt_handler(prompt_content, prompt_name, prompt_description)
 
 
-def signal_handler(signum: int, frame: Any) -> None:
+def signal_handler(_signum: int, _frame: Any) -> None:
     """Handle interrupt signals gracefully."""
     global signal_count
     signal_count += 1
@@ -157,8 +157,8 @@ def signal_handler(signum: int, frame: Any) -> None:
         logger.info("Received interrupt signal, shutting down gracefully...")
         logger.info("Press Ctrl+C again to force exit")
         # Set up handler for second interrupt to force exit
-        signal.signal(signal.SIGINT, lambda s, f: os._exit(1))
-        signal.signal(signal.SIGTERM, lambda s, f: os._exit(1))
+        signal.signal(signal.SIGINT, lambda _s, _f: os._exit(1))
+        signal.signal(signal.SIGTERM, lambda _s, _f: os._exit(1))
         # Use os._exit for clean shutdown without thread cleanup issues
         os._exit(0)
     else:
