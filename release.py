@@ -125,27 +125,13 @@ def main():
     if prerelease_type:
         print(f"Creating pre-release ({prerelease_type})")
 
-        # Run changelog command for prerelease
-        changelog_cmd = [
-            "uv",
-            "run",
-            "cz",
-            "changelog",
-            "--merge-prerelease",
-            "--incremental",
-            "--unreleased-version",
-            prerelease_type,
-        ]
-        run_command(
-            " ".join(changelog_cmd), "Generating changelog for prerelease"
-        )
-
         # Run bump command
         bump_cmd = [
             "uv",
             "run",
             "cz",
             "bump",
+            "--changelog",
             "--prerelease",
             prerelease_type,
             "--allow-no-commit",
@@ -164,19 +150,15 @@ def main():
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)
     else:
-        # Run changelog command for release
-        changelog_cmd = [
+        # Run bump command
+        bump_cmd = [
             "uv",
             "run",
             "cz",
-            "changelog",
-            "--merge-prerelease",
-            "--incremental",
+            "bump",
+            "--changelog",
+            "--allow-no-commit",
         ]
-        run_command(" ".join(changelog_cmd), "Generating changelog for release")
-
-        # Run bump command
-        bump_cmd = ["uv", "run", "cz", "bump", "--allow-no-commit"]
         run_command(" ".join(bump_cmd), "Creating release")
 
         # Run build command
