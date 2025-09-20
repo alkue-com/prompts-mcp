@@ -1,6 +1,9 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file.
+
+We use [PEP 440](https://peps.python.org/pep-0440/) version scheme and
+do [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## 1.5.1 (2025-09-20)
 
