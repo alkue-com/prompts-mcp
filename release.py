@@ -125,6 +125,12 @@ def main():
     if prerelease_type:
         print(f"Creating pre-release ({prerelease_type})")
 
+        # Run changelog command for prerelease
+        changelog_cmd = ["uv", "run", "cz", "changelog", "--incremental"]
+        run_command(
+            " ".join(changelog_cmd), "Generating changelog for prerelease"
+        )
+
         # Run bump command
         bump_cmd = [
             "uv",
@@ -136,12 +142,6 @@ def main():
             "--allow-no-commit",
         ]
         run_command(" ".join(bump_cmd), "Creating pre-release")
-
-        # Run changelog command for prerelease
-        changelog_cmd = ["uv", "run", "cz", "changelog", "--incremental"]
-        run_command(
-            " ".join(changelog_cmd), "Generating changelog for prerelease"
-        )
 
         # Run build command
         run_command("uv build", "Building package")
@@ -155,10 +155,6 @@ def main():
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)
     else:
-        # Run bump command
-        bump_cmd = ["uv", "run", "cz", "bump", "--allow-no-commit"]
-        run_command(" ".join(bump_cmd), "Creating release")
-
         # Run changelog command for release
         changelog_cmd = [
             "uv",
@@ -169,6 +165,10 @@ def main():
             "--incremental",
         ]
         run_command(" ".join(changelog_cmd), "Generating changelog for release")
+
+        # Run bump command
+        bump_cmd = ["uv", "run", "cz", "bump", "--allow-no-commit"]
+        run_command(" ".join(bump_cmd), "Creating release")
 
         # Run build command
         run_command("uv build", "Building package")
