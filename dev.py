@@ -70,30 +70,29 @@ def clean():
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python dev.py <command> [args...]")
+        print("Usage: ./dev.py <command> [args...]")
         print("")
         print("Commands:")
-        print("  install      Install Python dependencies")
+        print("  install      Install all Python dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
-        print("  check        Check code without fixing")
+        print("  check        Check code without fixing it")
         print("  test         Run tests (accepts pytest arguments)")
-        print("  clean        Clean build artifacts")
-        print("  all          Run all checks")
+        print("")
+        print("  all          Run all above")
+        print("  clean        Clean build artifacts and cache files")
         print("")
         print("Examples:")
-        print("  python dev.py test                     # Run all tests")
-        print("  python dev.py test -m unit             # Run unit tests")
-        print(
-            "  python dev.py test tests/test_main.py  # Run specific test file"
-        )
+        print("  ./dev.py test                     # Run all tests")
+        print("  ./dev.py test -m unit             # Run unit tests")
+        print("  ./dev.py test tests/test_main.py  # Run specific test file")
         sys.exit(1)
 
     command = sys.argv[1]
 
     commands = {
         "install": (
-            "uv sync --extra dev --extra test --no-managed-python && "
+            "uv sync --extra dev --extra test && "
             "uv run pre-commit install --hook-type pre-commit "
             "--hook-type commit-msg",
             "Installing Python dependencies",

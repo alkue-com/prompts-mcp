@@ -31,8 +31,6 @@ def initialize_server():
     """Initialize the server with environment variables and directory checks."""
     global PROMPTS_DIR, app
 
-    logger.info("sissssss")
-
     # Directory containing prompts - must be set via PROMPTS_DIR
     # environment variable
     prompts_dir_env = os.getenv("PROMPTS_DIR")
