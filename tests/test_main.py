@@ -32,7 +32,7 @@ class TestMainFunction:
         """Test successful main function execution."""
         # Create a mock server instance
         mock_server = MagicMock()
-        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.prompts_dir = Path("test") / "prompts"
         mock_server.app = MagicMock()
         mock_server_class.return_value = mock_server
 
@@ -68,7 +68,7 @@ class TestMainFunction:
 
         # Create a mock server instance with an app that raises an error
         mock_server = MagicMock()
-        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.prompts_dir = Path("test") / "prompts"
         mock_server.app = MagicMock()
         mock_server.app.run.side_effect = RuntimeError("Server error")
         mock_server_class.return_value = mock_server
@@ -232,7 +232,7 @@ class TestMainEdgeCases:
 
         # Create a mock server instance with None app
         mock_server = MagicMock()
-        mock_server.prompts_dir = Path("/test/prompts")
+        mock_server.prompts_dir = Path("test") / "prompts"
         mock_server.app = None
         mock_server_class.return_value = mock_server
 

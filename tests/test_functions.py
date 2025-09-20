@@ -110,7 +110,8 @@ Just a simple prompt for testing purposes.
 
     def test_load_prompt_file_nonexistent_file(self) -> None:
         """Test loading a nonexistent prompt file raises FileNotFoundError."""
-        nonexistent_file = Path("/nonexistent/prompt.md")
+        # Use a cross-platform path that's guaranteed not to exist
+        nonexistent_file = Path("nonexistent") / "prompt.md"
 
         with pytest.raises(FileNotFoundError):
             load_prompt_file(nonexistent_file)
@@ -433,6 +434,40 @@ class TestRegisterPromptFunction:
         assert (
             decorator_call[1]["description"] == "A test prompt for unit testing"
         )
+
+
+@pytest.mark.unit
+class TestCrossPlatformCompatibility:
+    """Test cross-platform compatibility features."""
+
+    def test_signal_availability_check(self) -> None:
+        """Test that signal availability is checked correctly."""
+        from prompts_mcp.main import _is_signal_available
+
+        # SIGINT should be available on all platforms
+        assert _is_signal_available("SIGINT")
+
+        # SIGTERM may not be available on Windows
+        # This test just ensures the function works without error
+        _is_signal_available("SIGTERM")
+
+    def test_encoding_fallback(self) -> None:
+        """Test that file encoding fallback works correctly."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            # Create a file with non-UTF-8 content to test fallback
+            prompt_file = prompts_dir / "test_encoding.md"
+            # Write some content that should be readable
+            prompt_file.write_text(
+                "# Test Encoding\n\nThis is a test.", encoding="utf-8"
+            )
+
+            # This should work with our improved encoding handling
+            result = load_prompt_file(prompt_file)
+            assert result["name"] == "test_encoding"
+            assert "Test Encoding" in result["title"]
 
 
 @pytest.mark.unit

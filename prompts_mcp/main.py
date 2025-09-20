@@ -20,6 +20,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("prompts-mcp")
 
 
+def _is_signal_available(signal_name: str) -> bool:
+    """Check if a signal is available on the current platform."""
+    return hasattr(signal, signal_name)
+
+
 class PromptsMCPServer:
     """MCP Server for serving prompts from a local directory using FastMCP."""
 
@@ -140,7 +145,9 @@ class PromptsMCPServer:
             logger.info("Press Ctrl+C again to force exit")
             # Set up handler for second interrupt to force exit
             signal.signal(signal.SIGINT, lambda _s, _f: os._exit(1))
-            signal.signal(signal.SIGTERM, lambda _s, _f: os._exit(1))
+            # SIGTERM is not available on all platforms (e.g., Windows)
+            if _is_signal_available("SIGTERM"):
+                signal.signal(signal.SIGTERM, lambda _s, _f: os._exit(1))
             # Use os._exit for clean shutdown without thread cleanup issues
             os._exit(0)
         else:
@@ -194,7 +201,17 @@ def _extract_description_from_content(content: str) -> str:
 
 def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
     """Load and parse a prompt file."""
-    content = prompt_path.read_text(encoding="utf-8")
+    try:
+        # Try UTF-8 first, fall back to system default if needed
+        content = prompt_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        # Fall back to system default encoding if UTF-8 fails
+        try:
+            content = prompt_path.read_text()
+        except UnicodeDecodeError:
+            # Last resort: read as bytes and decode with errors='replace'
+            content = prompt_path.read_bytes().decode("utf-8", errors="replace")
+
     title = _extract_title_from_filename(prompt_path)
     description = _extract_description_from_content(content)
 
@@ -216,7 +233,9 @@ def main() -> None:
 
     # Set up signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, server.signal_handler)
-    signal.signal(signal.SIGTERM, server.signal_handler)
+    # SIGTERM is not available on all platforms (e.g., Windows)
+    if _is_signal_available("SIGTERM"):
+        signal.signal(signal.SIGTERM, server.signal_handler)
 
     # Load all prompts
     server.load_all_prompts()

@@ -14,7 +14,17 @@ def run_command(cmd: str, description: str = "") -> None:
         print(f"{description}...")
 
     print(f"Running: {cmd}")
-    result = subprocess.run(cmd, shell=True, check=False)
+    # Use shell=True only on Unix-like systems, split command on Windows
+    if sys.platform == "win32":
+        # On Windows, split the command and use list format
+        try:
+            result = subprocess.run(cmd.split(), check=False)
+        except FileNotFoundError:
+            print(f"Command not found: {cmd}")
+            sys.exit(1)
+    else:
+        # On Unix-like systems, use shell=True
+        result = subprocess.run(cmd, shell=True, check=False)
     if result.returncode != 0:
         print(f"Command failed with exit code {result.returncode}")
         sys.exit(result.returncode)
