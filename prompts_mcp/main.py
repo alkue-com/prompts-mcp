@@ -101,7 +101,11 @@ def load_all_prompts() -> None:
         logger.error("PROMPTS_DIR is not initialized")
         return
 
-    for prompt_file in PROMPTS_DIR.glob("*.md"):
+    # Copy global variables to local variables for efficiency
+    prompts_dir = PROMPTS_DIR
+    log = logger
+
+    for prompt_file in prompts_dir.glob("*.md"):
         if prompt_file.name == "README.md":
             continue
 
@@ -113,9 +117,9 @@ def load_all_prompts() -> None:
             prompt_count += 1
 
         except Exception as e:
-            logger.error(f"Error loading prompt file {prompt_file}: {e}")
+            log.error(f"Error loading prompt file {prompt_file}: {e}")
 
-    logger.info(f"Loaded {prompt_count} prompts from {PROMPTS_DIR}")
+    log.info(f"Loaded {prompt_count} prompts from {prompts_dir}")
 
 
 def register_prompt(prompt_data: dict[str, Any]) -> None:
