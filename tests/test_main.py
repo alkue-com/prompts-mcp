@@ -153,6 +153,92 @@ class TestEnvironmentValidation:
 
 
 @pytest.mark.unit
+class TestLoadAllPromptsEdgeCases:
+    """Test edge cases for load_all_prompts function."""
+
+    @patch("prompts_mcp.main.logger")
+    def test_load_all_prompts_prompts_dir_none(self, mock_logger: Any) -> None:
+        """Test load_all_prompts when PROMPTS_DIR is None."""
+        import prompts_mcp.main
+
+        # Set PROMPTS_DIR to None
+        prompts_mcp.main.PROMPTS_DIR = None
+
+        from prompts_mcp.main import load_all_prompts
+
+        load_all_prompts()
+
+        mock_logger.error.assert_called_once_with(
+            "PROMPTS_DIR is not initialized"
+        )
+
+
+@pytest.mark.unit
+class TestRegisterPromptEdgeCases:
+    """Test edge cases for register_prompt function."""
+
+    @patch("prompts_mcp.main.app")
+    def test_register_prompt_app_none(self, mock_app: Any) -> None:
+        """Test register_prompt when app is None."""
+        import prompts_mcp.main
+
+        # Set app to None
+        prompts_mcp.main.app = None
+
+        from prompts_mcp.main import register_prompt
+
+        prompt_data = {
+            "name": "test_prompt",
+            "content": "Test content",
+            "description": "Test description",
+        }
+
+        with pytest.raises(
+            RuntimeError, match="FastMCP app is not initialized"
+        ):
+            register_prompt(prompt_data)
+
+
+@pytest.mark.unit
+class TestMainEdgeCases:
+    """Test edge cases for main function."""
+
+    @patch("prompts_mcp.main.load_all_prompts")
+    @patch("prompts_mcp.main.signal.signal")
+    @patch("prompts_mcp.main.logger")
+    @patch("prompts_mcp.main.initialize_server")
+    @patch("sys.exit")
+    def test_main_app_none(
+        self,
+        mock_exit: Any,
+        mock_init_server: Any,
+        mock_logger: Any,
+        mock_signal: Any,
+        mock_load_prompts: Any,
+    ) -> None:
+        """Test main function when app is None."""
+        # Set up the mocked app and PROMPTS_DIR
+        import prompts_mcp.main
+
+        # Set app to None after initialize_server is called
+        def mock_init_server_side_effect() -> None:
+            prompts_mcp.main.app = None
+            prompts_mcp.main.PROMPTS_DIR = Path("/test/prompts")
+
+        mock_init_server.side_effect = mock_init_server_side_effect
+
+        from prompts_mcp.main import main
+
+        main()
+
+        mock_init_server.assert_called_once()
+        # Check that the first error call is the expected one
+        mock_logger.error.assert_any_call("FastMCP app is not initialized")
+        # Should exit due to app being None
+        mock_exit.assert_called_with(1)
+
+
+@pytest.mark.unit
 class TestMainBlock:
     """Test cases for the main block execution."""
 
