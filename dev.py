@@ -73,7 +73,7 @@ def main():
         print("Usage: ./dev.py <command> [args...]")
         print("")
         print("Commands:")
-        print("  sync         Sync dependencies (with extras)")
+        print("  sync         Sync dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
         print("  check        Check code without fixing it")
@@ -92,7 +92,7 @@ def main():
 
     commands = {
         "sync": (
-            "uv sync --all-extras && "
+            "uv sync --dev && "
             "uv run pre-commit install --hook-type pre-commit "
             "--hook-type commit-msg",
             "Syncing dependencies",

@@ -17,8 +17,12 @@ classifiers = [
 ]
 dependencies = ["mcp>=1.14.1"]
 
-[project.optional-dependencies]
-dev = ["commitizen", "pre-commit"]
+[dependency-groups]
+dev = [
+    "commitizen",
+    "pre-commit",
+    {include-group = "test"}
+]
 test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov", "ruff"]
 
 [project.scripts]
