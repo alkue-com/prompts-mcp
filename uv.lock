@@ -586,44 +586,32 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-dev = [
+commit = [
     { name = "commitizen" },
     { name = "pre-commit" },
+]
+dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "ruff" },
-]
-lint = [
-    { name = "ruff" },
-]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
 ]
 
 [package.metadata]
 requires-dist = [{ name = "mcp", specifier = ">=1.14.1" }]
 
 [package.metadata.requires-dev]
-dev = [
+commit = [
     { name = "commitizen" },
     { name = "pre-commit" },
+]
+dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "ruff" },
-]
-lint = [{ name = "ruff" }]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
 ]
 
 [[package]]

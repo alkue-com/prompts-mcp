@@ -18,14 +18,8 @@ classifiers = [
 dependencies = ["mcp>=1.14.1"]
 
 [dependency-groups]
-dev = [
-    "commitizen",
-    "pre-commit",
-    {include-group = "lint"},
-    {include-group = "test"}
-]
-lint = ["ruff"]
-test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov"]
+dev = ["pytest", "pytest-asyncio", "pytest-cov", "pytest-mock", "ruff"]
+commit = ["commitizen", "pre-commit"]
 
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
