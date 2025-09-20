@@ -1,6 +1,6 @@
 # Contributing
 
-You can use your favorite Python version manager (mise, pyenv, ...)
+You can have your favorite Python version manager (mise, pyenv, ...)
 as long as it follows `.python-version`.
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
