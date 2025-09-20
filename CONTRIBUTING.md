@@ -23,18 +23,10 @@ To run all the tasks (sync, format, lint, check, test) at once:
 
 ### Windows
 
-Set the `PROMPTS_DIR` environment variable:
+Similarly:
 
     set PROMPTS_DIR=C:\path\to\your\prompts
-
-Run the server:
-
     uv run prompts-mcp
-
-Use `python dev.py` for common tasks. Run without arguments for list of all tasks.
-
-To run all the tasks (sync, format, lint, check, test) at once:
-
     python dev.py all
 
 ### Test drive
