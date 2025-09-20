@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 
 def run_command(cmd: str, description: str = "") -> None:
@@ -22,7 +23,7 @@ def run_command(cmd: str, description: str = "") -> None:
 def _remove_directories(dirs_to_remove: list[str]) -> None:
     """Remove specified directories if they exist."""
     for dir_name in dirs_to_remove:
-        if os.path.exists(dir_name):
+        if Path(dir_name).exists():
             shutil.rmtree(dir_name)
             print(f"Removed directory: {dir_name}")
 
@@ -30,8 +31,9 @@ def _remove_directories(dirs_to_remove: list[str]) -> None:
 def _remove_files(files_to_remove: list[str]) -> None:
     """Remove specified files if they exist."""
     for file_name in files_to_remove:
-        if os.path.exists(file_name):
-            os.remove(file_name)
+        file_path = Path(file_name)
+        if file_path.exists():
+            file_path.unlink()
             print(f"Removed file: {file_name}")
 
 
@@ -40,7 +42,7 @@ def _remove_pycache_directories() -> None:
     for root, dirs, _files in os.walk("."):
         for d in dirs[:]:  # Use slice to avoid modifying list while iterating
             if d == "__pycache__":
-                cache_dir = os.path.join(root, d)
+                cache_dir = Path(root) / d
                 shutil.rmtree(cache_dir)
                 print(f"Removed cache directory: {cache_dir}")
                 dirs.remove(d)  # Remove from dirs to avoid descending into it
@@ -51,8 +53,8 @@ def _remove_compiled_python_files() -> None:
     for root, _dirs, files in os.walk("."):
         for file in files:
             if file.endswith((".pyc", ".pyo")):
-                file_path = os.path.join(root, file)
-                os.remove(file_path)
+                file_path = Path(root) / file
+                file_path.unlink()
                 print(f"Removed file: {file_path}")
 
 

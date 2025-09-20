@@ -5,7 +5,6 @@ Logic for getting uv publish to read credentials from ~/.pypirc by bulletmark.
 See: https://github.com/bulletmark/uv-publish/blob/main/uv_publish.py
 """
 
-import os
 import shutil
 import subprocess
 import sys
@@ -70,8 +69,8 @@ def check_working_tree_clean() -> None:
 
 def clear_dist_directory() -> None:
     """Clear the dist/ directory if it exists."""
-    dist_path = "dist"
-    if os.path.exists(dist_path):
+    dist_path = Path("dist")
+    if dist_path.exists():
         print("Clearing dist/ directory...")
         shutil.rmtree(dist_path)
         print("dist/ directory cleared")

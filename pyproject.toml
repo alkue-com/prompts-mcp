@@ -66,6 +66,7 @@ select = [
     "RET", # flake8-return
     "SLF", # flake8-self
     "TID", # flake8-tidy-imports
+    "PTH", # flake8-use-pathlib
 ]
 
 [tool.ruff.lint.mccabe]
