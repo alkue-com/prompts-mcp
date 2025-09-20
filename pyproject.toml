@@ -62,6 +62,7 @@ select = [
 
 [tool.commitizen]
 bump_message = "chore: Release $new_version"
+prerelease_offset = 1
 version_provider = "uv"
 version_files = ["prompts_mcp/__init__.py:__version__"]
 update_changelog_on_bump = true
