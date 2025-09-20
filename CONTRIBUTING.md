@@ -1,12 +1,6 @@
 # Contributing
 
-You can have your favorite Python version manager (mise, pyenv, ...)
-as long as it follows `.python-version`.
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
-if not already installed:
-
-    python3 -m pip install --user uv
+Have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
 
 ## Development
 
@@ -14,15 +8,15 @@ Set the `PROMPTS_DIR` environment variable:
 
     export PROMPTS_DIR="/path/to/your/prompts"
 
+Run the server:
+
+    uv run prompts-mcp
+
 Use `./dev.py` for common tasks. Run without arguments for list of all tasks.
 
 To run all the checks (install, format, lint, check, test) at once:
 
     ./dev.py all
-
-Run the server:
-
-    uv run prompts-mcp
 
 ### Test drive
 
