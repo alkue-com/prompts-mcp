@@ -595,12 +595,14 @@ dev = [
     { name = "pytest-mock" },
     { name = "ruff" },
 ]
+lint = [
+    { name = "ruff" },
+]
 test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -616,12 +618,12 @@ dev = [
     { name = "pytest-mock" },
     { name = "ruff" },
 ]
+lint = [{ name = "ruff" }]
 test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
-    { name = "ruff" },
 ]
 
 [[package]]

@@ -21,9 +21,11 @@ dependencies = ["mcp>=1.14.1"]
 dev = [
     "commitizen",
     "pre-commit",
+    {include-group = "lint"},
     {include-group = "test"}
 ]
-test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov", "ruff"]
+lint = ["ruff"]
+test = ["pytest", "pytest-asyncio", "pytest-mock", "pytest-cov"]
 
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
