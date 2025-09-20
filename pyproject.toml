@@ -65,6 +65,7 @@ bump_message = "chore: Release $new_version"
 version_provider = "uv"
 version_files = ["prompts_mcp/__init__.py:__version__"]
 update_changelog_on_bump = true
+changelog_incremental = true
 changelog_merge_prerelease = true
 
 [build-system]
