@@ -589,13 +589,13 @@ dependencies = [
 dev = [
     { name = "commitizen" },
     { name = "pre-commit" },
-    { name = "ruff" },
 ]
 test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -607,7 +607,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'test'" },
     { name = "pytest-cov", marker = "extra == 'test'" },
     { name = "pytest-mock", marker = "extra == 'test'" },
-    { name = "ruff", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'test'" },
 ]
 provides-extras = ["dev", "test"]
 
