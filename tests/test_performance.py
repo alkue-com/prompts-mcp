@@ -4,6 +4,7 @@ Performance tests for prompts-mcp package.
 
 import time
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -13,7 +14,7 @@ import pytest
 class TestPerformance:
     """Performance tests for the prompts-mcp package."""
 
-    def test_load_prompt_file_performance(self, temp_prompts_dir):
+    def test_load_prompt_file_performance(self, temp_prompts_dir: Any) -> None:
         """Test performance of loading individual prompt files."""
         prompt_file = temp_prompts_dir / "test_prompt_1.md"
 
@@ -28,7 +29,7 @@ class TestPerformance:
         # Should complete 100 loads in reasonable time (< 1 second)
         assert (end_time - start_time) < 1.0
 
-    def test_load_all_prompts_performance(self, temp_prompts_dir):
+    def test_load_all_prompts_performance(self, temp_prompts_dir: Any) -> None:
         """Test performance of loading all prompts."""
         # Create multiple prompt files
         for i in range(50):
@@ -47,7 +48,7 @@ class TestPerformance:
                 # (< 2 seconds)
                 assert (end_time - start_time) < 2.0
 
-    def test_memory_usage_with_large_files(self):
+    def test_memory_usage_with_large_files(self) -> None:
         """Test memory usage with large prompt files."""
         import tempfile
 
@@ -70,7 +71,7 @@ class TestPerformance:
             assert result["name"] == "large_prompt"
             assert result["title"] == "Large Prompt"
 
-    def test_concurrent_prompt_loading(self, temp_prompts_dir):
+    def test_concurrent_prompt_loading(self, temp_prompts_dir: Any) -> None:
         """Test concurrent loading of multiple prompt files."""
         import concurrent.futures
 
@@ -83,7 +84,7 @@ class TestPerformance:
             )
             prompt_files.append(prompt_file)
 
-        def load_single_prompt(prompt_file):
+        def load_single_prompt(prompt_file: Any) -> Any:
             from prompts_mcp.main import load_prompt_file
 
             return load_prompt_file(prompt_file)

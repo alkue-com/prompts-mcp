@@ -5,6 +5,7 @@ Integration tests for prompts-mcp package.
 import os
 import tempfile
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -14,7 +15,7 @@ import pytest
 class TestIntegration:
     """Integration tests for the prompts-mcp package."""
 
-    def test_end_to_end_prompt_loading(self):
+    def test_end_to_end_prompt_loading(self) -> None:
         """Test complete end-to-end prompt loading workflow."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -62,7 +63,7 @@ class TestIntegration:
                         assert "user_prompt" in registered_names
                         assert "README" not in registered_names
 
-    def test_prompt_file_parsing_variations(self):
+    def test_prompt_file_parsing_variations(self) -> None:
         """Test various prompt file formats and edge cases."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -147,7 +148,7 @@ Use carefully.
                 )
                 assert result["content"] == test_case["content"]
 
-    def test_error_handling_integration(self):
+    def test_error_handling_integration(self) -> None:
         """Test error handling in integration scenarios."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -164,7 +165,7 @@ Use carefully.
             # Mock file reading to raise an error for the invalid file
             original_read_text = Path.read_text
 
-            def mock_read_text(self, encoding=None):
+            def mock_read_text(self: Any, encoding: str | None = None) -> str:
                 if self.name == "invalid_prompt.md":
                     raise PermissionError("Cannot read file")
                 return original_read_text(self, encoding)
@@ -185,7 +186,7 @@ Use carefully.
                             # Should still register the valid file
                             mock_register.assert_called_once()
 
-    def test_large_prompt_files(self):
+    def test_large_prompt_files(self) -> None:
         """Test handling of large prompt files."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"

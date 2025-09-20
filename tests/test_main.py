@@ -6,6 +6,7 @@ with proper mocking to avoid import-time side effects.
 """
 
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -22,12 +23,12 @@ class TestMainFunction:
     @patch("prompts_mcp.main.initialize_server")
     def test_main_success(
         self,
-        mock_init_server,
-        mock_logger,
-        mock_signal,
-        mock_app,
-        mock_load_prompts,
-    ):
+        mock_init_server: Any,
+        mock_logger: Any,
+        mock_signal: Any,
+        mock_app: Any,
+        mock_load_prompts: Any,
+    ) -> None:
         """Test successful main function execution."""
         # Set up the mocked app and PROMPTS_DIR
         import prompts_mcp.main
@@ -55,13 +56,13 @@ class TestMainFunction:
     @patch("sys.exit")
     def test_main_app_error(
         self,
-        mock_exit,
-        mock_init_server,
-        mock_logger,
-        mock_signal,
-        mock_app,
-        mock_load_prompts,
-    ):
+        mock_exit: Any,
+        mock_init_server: Any,
+        mock_logger: Any,
+        mock_signal: Any,
+        mock_app: Any,
+        mock_load_prompts: Any,
+    ) -> None:
         """Test main function handles app.run errors."""
         mock_app.run.side_effect = Exception("Server error")
 
@@ -88,8 +89,8 @@ class TestEnvironmentValidation:
     @patch("sys.exit")
     @patch.dict("os.environ", {}, clear=True)
     def test_initialize_server_missing_prompts_dir(
-        self, mock_exit, mock_logger
-    ):
+        self, mock_exit: Any, mock_logger: Any
+    ) -> None:
         """Test initialize_server fails when PROMPTS_DIR is not set."""
         # Mock sys.exit to raise SystemExit to prevent actual exit
         mock_exit.side_effect = SystemExit(1)
@@ -109,8 +110,8 @@ class TestEnvironmentValidation:
     @patch("prompts_mcp.main.Path")
     @patch.dict("os.environ", {"PROMPTS_DIR": "/nonexistent/path"})
     def test_initialize_server_nonexistent_directory(
-        self, mock_path_class, mock_exit, mock_logger
-    ):
+        self, mock_path_class: Any, mock_exit: Any, mock_logger: Any
+    ) -> None:
         """Test initialize_server fails when PROMPTS_DIR doesn't exist."""
         # Mock sys.exit to raise SystemExit to prevent actual exit
         mock_exit.side_effect = SystemExit(1)
@@ -134,7 +135,9 @@ class TestEnvironmentValidation:
     @patch("prompts_mcp.main.FastMCP")
     @patch("prompts_mcp.main.Path")
     @patch.dict("os.environ", {"PROMPTS_DIR": "/valid/path"})
-    def test_initialize_server_success(self, mock_path_class, mock_fastmcp):
+    def test_initialize_server_success(
+        self, mock_path_class: Any, mock_fastmcp: Any
+    ) -> None:
         """Test successful initialize_server execution."""
         # Mock Path to return a path that exists
         mock_path = mock_path_class.return_value
@@ -153,7 +156,7 @@ class TestEnvironmentValidation:
 class TestMainBlock:
     """Test cases for the main block execution."""
 
-    def test_main_block_coverage(self):
+    def test_main_block_coverage(self) -> None:
         """Test that verifies the main block can be executed."""
         # This test ensures the main block is testable
         # We can't easily test the if __name__ == "__main__" block directly

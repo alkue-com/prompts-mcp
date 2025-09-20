@@ -27,7 +27,7 @@ PROMPTS_DIR: Path | None = None
 app: FastMCP | None = None
 
 
-def initialize_server():
+def initialize_server() -> None:
     """Initialize the server with environment variables and directory checks."""
     global PROMPTS_DIR, app
 
@@ -93,10 +93,14 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
     }
 
 
-def load_all_prompts():
+def load_all_prompts() -> None:
     """Load all prompts from the prompts directory and register them
     individually."""
     prompt_count = 0
+    if PROMPTS_DIR is None:
+        logger.error("PROMPTS_DIR is not initialized")
+        return
+
     for prompt_file in PROMPTS_DIR.glob("*.md"):
         if prompt_file.name == "README.md":
             continue
@@ -114,15 +118,20 @@ def load_all_prompts():
     logger.info(f"Loaded {prompt_count} prompts from {PROMPTS_DIR}")
 
 
-def register_prompt(prompt_data: dict[str, Any]):
+def register_prompt(prompt_data: dict[str, Any]) -> None:
     """Register an individual prompt with FastMCP."""
     prompt_name = prompt_data["name"]
     prompt_content = prompt_data["content"]
     prompt_description = prompt_data["description"]
 
     # Create a prompt handler function for this specific prompt
-    def create_prompt_handler(content: str, name: str, description: str):
-        @app.prompt(name=name, description=description)
+    def create_prompt_handler(
+        content: str, name: str, description: str
+    ) -> None:
+        if app is None:
+            raise RuntimeError("FastMCP app is not initialized")
+
+        # Define the prompt handler function first
         async def prompt_handler(
             arguments: dict[str, Any] | None = None,
         ) -> str:
@@ -132,13 +141,14 @@ def register_prompt(prompt_data: dict[str, Any]):
                 result += f"\n\n{arguments['input']}"
             return result
 
-        return prompt_handler
+        # Register the prompt with FastMCP
+        app.prompt(name=name, description=description)(prompt_handler)
 
     # Register the prompt
     create_prompt_handler(prompt_content, prompt_name, prompt_description)
 
 
-def signal_handler(signum, frame):
+def signal_handler(signum: int, frame: Any) -> None:
     """Handle interrupt signals gracefully."""
     global signal_count
     signal_count += 1
@@ -156,7 +166,7 @@ def signal_handler(signum, frame):
         os._exit(1)
 
 
-def main():
+def main() -> None:
     """Main entry point for the MCP server."""
     # Initialize server first
     initialize_server()
@@ -172,6 +182,10 @@ def main():
     load_all_prompts()
 
     # Run the server directly - signal handler will handle shutdown
+    if app is None:
+        logger.error("FastMCP app is not initialized")
+        sys.exit(1)
+
     try:
         app.run()
     except Exception as e:

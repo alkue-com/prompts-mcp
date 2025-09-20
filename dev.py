@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 
-def run_command(cmd, description=""):
+def run_command(cmd: str, description: str = "") -> None:
     """Run a command and exit on failure."""
     if description:
         print(f"{description}...")
@@ -19,7 +19,7 @@ def run_command(cmd, description=""):
         sys.exit(result.returncode)
 
 
-def clean():
+def clean() -> None:
     """Remove build files, cache files, and test caches."""
     print("Cleaning build artifacts...")
 
@@ -67,7 +67,7 @@ def clean():
     print("Clean completed!")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: ./dev.py <command> [args...]")
         print("")
@@ -110,7 +110,8 @@ def main():
                 run_command("uv run pytest", "Running tests")
             else:
                 cmd, desc = commands[cmd_name]
-                run_command(cmd, desc)
+                if cmd is not None:
+                    run_command(cmd, desc)
     elif command == "clean":
         clean()  # Special case - use function instead of command
     elif command == "test":
@@ -124,7 +125,8 @@ def main():
         run_command(pytest_cmd, "Running tests")
     elif command in commands:
         cmd, desc = commands[command]
-        run_command(cmd, desc)
+        if cmd is not None:
+            run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
         print("Available commands: sync, format, lint, check, test, clean, all")

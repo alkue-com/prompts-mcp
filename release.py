@@ -28,7 +28,7 @@ repository = https://test.pypi.org/legacy/
 """
 
 
-def run_command(cmd, description=""):
+def run_command(cmd: str, description: str = "") -> None:
     """Run a command and exit on failure."""
     if description:
         print(f"{description}...")
@@ -40,7 +40,7 @@ def run_command(cmd, description=""):
         sys.exit(result.returncode)
 
 
-def get_current_branch():
+def get_current_branch() -> str:
     """Get the current git branch."""
     result = subprocess.run(
         ["git", "branch", "--show-current"], capture_output=True, text=True
@@ -51,7 +51,7 @@ def get_current_branch():
     return result.stdout.strip()
 
 
-def check_working_tree_clean():
+def check_working_tree_clean() -> None:
     """Check if the working tree has uncommitted changes."""
     result = subprocess.run(
         ["git", "status", "-s"], capture_output=True, text=True
@@ -65,7 +65,7 @@ def check_working_tree_clean():
         sys.exit(1)
 
 
-def clear_dist_directory():
+def clear_dist_directory() -> None:
     """Clear the dist/ directory if it exists."""
     dist_path = "dist"
     if os.path.exists(dist_path):
@@ -76,7 +76,7 @@ def clear_dist_directory():
         print("dist/ directory does not exist, skipping clear")
 
 
-def build_uv_publish_command(repository="pypi"):
+def build_uv_publish_command(repository: str = "pypi") -> list[str]:
     """Build uv publish command with credentials from .pypirc."""
     config = ConfigParser()
     config.read_string(DEFAULT_CONFIG)
@@ -104,7 +104,7 @@ def build_uv_publish_command(repository="pypi"):
     return ["uv", "publish"] + opts
 
 
-def main():
+def main() -> None:
     prerelease_type = sys.argv[1] if len(sys.argv) > 1 else None
 
     # Check if we're on main or master branch

@@ -4,14 +4,14 @@ Test fixtures and configuration for prompts-mcp tests.
 
 import os
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 
-@pytest.fixture
-def temp_prompts_dir():
+def temp_prompts_dir() -> Generator[Path, None, None]:
     """Create a temporary directory with sample prompt files for testing."""
     with tempfile.TemporaryDirectory() as temp_dir:
         prompts_dir = Path(temp_dir) / "prompts"
@@ -49,24 +49,21 @@ This is a README file that should be ignored during prompt loading.
         yield prompts_dir
 
 
-@pytest.fixture
-def mock_fastmcp():
+def mock_fastmcp() -> MagicMock:
     """Mock FastMCP server for testing."""
     mock_app = MagicMock()
     mock_app.prompt = MagicMock()
     return mock_app
 
 
-@pytest.fixture
-def mock_environment():
+def mock_environment() -> Generator[None, None, None]:
     """Mock environment variables for testing."""
     test_prompts_path = Path(__file__).parent / "test_prompts"
     with patch.dict(os.environ, {"PROMPTS_DIR": str(test_prompts_path)}):
         yield
 
 
-@pytest.fixture
-def sample_prompt_data():
+def sample_prompt_data() -> dict[str, str]:
     """Sample prompt data for testing."""
     return {
         "name": "test_prompt",
@@ -76,15 +73,22 @@ def sample_prompt_data():
     }
 
 
-@pytest.fixture
-def mock_signal():
+def mock_signal() -> Generator[MagicMock, None, None]:
     """Mock signal handling for testing."""
     with patch("signal.signal") as mock_signal_func:
         yield mock_signal_func
 
 
-@pytest.fixture
-def mock_logger():
+def mock_logger() -> Generator[MagicMock, None, None]:
     """Mock logger for testing."""
     with patch("prompts_mcp.main.logger") as mock_log:
         yield mock_log
+
+
+# Register all functions as pytest fixtures
+temp_prompts_dir = pytest.fixture(temp_prompts_dir)
+mock_fastmcp = pytest.fixture(mock_fastmcp)
+mock_environment = pytest.fixture(mock_environment)
+sample_prompt_data = pytest.fixture(sample_prompt_data)
+mock_signal = pytest.fixture(mock_signal)
+mock_logger = pytest.fixture(mock_logger)

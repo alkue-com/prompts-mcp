@@ -8,6 +8,7 @@ that has side effects at import time.
 import signal
 import tempfile
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -17,7 +18,7 @@ import pytest
 class TestLoadPromptFileFunction:
     """Test cases for the load_prompt_file function."""
 
-    def test_load_prompt_file_with_identity_section(self):
+    def test_load_prompt_file_with_identity_section(self) -> None:
         """Test loading a prompt file with IDENTITY section."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -49,7 +50,7 @@ Here are some examples of how to use this prompt.
             )
             assert result["content"].startswith("# Test Prompt 1")
 
-    def test_load_prompt_file_without_identity_section(self):
+    def test_load_prompt_file_without_identity_section(self) -> None:
         """Test loading a prompt file without IDENTITY section."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -75,7 +76,7 @@ Just a simple prompt for testing purposes.
             )
             assert result["content"].startswith("# Test Prompt 2")
 
-    def test_load_prompt_file_with_underscores_in_name(self):
+    def test_load_prompt_file_with_underscores_in_name(self) -> None:
         """Test that underscores in filename are converted to spaces in
         title."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -93,7 +94,7 @@ Just a simple prompt for testing purposes.
             assert result["name"] == "test_prompt_with_underscores"
             assert result["title"] == "Test Prompt With Underscores"
 
-    def test_load_prompt_file_empty_content(self):
+    def test_load_prompt_file_empty_content(self) -> None:
         """Test loading a prompt file with empty content."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -111,7 +112,7 @@ Just a simple prompt for testing purposes.
             assert result["description"] == ""
             assert result["content"] == ""
 
-    def test_load_prompt_file_nonexistent_file(self):
+    def test_load_prompt_file_nonexistent_file(self) -> None:
         """Test loading a nonexistent prompt file raises FileNotFoundError."""
         nonexistent_file = Path("/nonexistent/prompt.md")
 
@@ -128,8 +129,8 @@ class TestLoadAllPromptsFunction:
     @patch("prompts_mcp.main.register_prompt")
     @patch("prompts_mcp.main.PROMPTS_DIR")
     def test_load_all_prompts_success(
-        self, mock_prompts_dir, mock_register_prompt
-    ):
+        self, mock_prompts_dir: Any, mock_register_prompt: Any
+    ) -> None:
         """Test successful loading of all prompts."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -157,8 +158,8 @@ class TestLoadAllPromptsFunction:
     @patch("prompts_mcp.main.register_prompt")
     @patch("prompts_mcp.main.PROMPTS_DIR")
     def test_load_all_prompts_skips_readme(
-        self, mock_prompts_dir, mock_register_prompt
-    ):
+        self, mock_prompts_dir: Any, mock_register_prompt: Any
+    ) -> None:
         """Test that README.md files are skipped."""
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -186,8 +187,8 @@ class TestLoadAllPromptsFunction:
     @patch("prompts_mcp.main.PROMPTS_DIR")
     @patch("prompts_mcp.main.logger")
     def test_load_all_prompts_handles_errors(
-        self, mock_logger, mock_prompts_dir, mock_register_prompt
-    ):
+        self, mock_logger: Any, mock_prompts_dir: Any, mock_register_prompt: Any
+    ) -> None:
         """Test that errors in loading individual prompts are handled
         gracefully."""
         mock_prompts_dir.glob.return_value = [Path("/nonexistent/prompt.md")]
@@ -207,8 +208,8 @@ class TestLoadAllPromptsFunction:
     @patch("prompts_mcp.main.register_prompt")
     @patch("prompts_mcp.main.PROMPTS_DIR")
     def test_load_all_prompts_no_files(
-        self, mock_prompts_dir, mock_register_prompt
-    ):
+        self, mock_prompts_dir: Any, mock_register_prompt: Any
+    ) -> None:
         """Test loading when no prompt files exist."""
         mock_prompts_dir.glob.return_value = []
 
@@ -229,7 +230,7 @@ class TestRegisterPromptFunction:
     """Test cases for the register_prompt function."""
 
     @patch("prompts_mcp.main.app")
-    def test_register_prompt_success(self, mock_app):
+    def test_register_prompt_success(self, mock_app: Any) -> None:
         """Test successful prompt registration."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -258,7 +259,7 @@ class TestRegisterPromptFunction:
         )
 
     @patch("prompts_mcp.main.app")
-    def test_register_prompt_with_input_argument(self, mock_app):
+    def test_register_prompt_with_input_argument(self, mock_app: Any) -> None:
         """Test that the registered prompt handler accepts input arguments."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -268,7 +269,7 @@ class TestRegisterPromptFunction:
         }
 
         # Create a mock decorator that returns the function unchanged
-        def mock_decorator(func):
+        def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
@@ -293,7 +294,7 @@ class TestRegisterPromptFunction:
         )
 
     @patch("prompts_mcp.main.app")
-    def test_register_prompt_handler_with_input(self, mock_app):
+    def test_register_prompt_handler_with_input(self, mock_app: Any) -> None:
         """Test that the registered prompt handler works with input args."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -305,7 +306,7 @@ class TestRegisterPromptFunction:
         # Create a mock decorator that captures the function
         captured_func = None
 
-        def mock_decorator(func):
+        def mock_decorator(func: Any) -> Any:
             nonlocal captured_func
             captured_func = func
             return func
@@ -355,7 +356,9 @@ class TestRegisterPromptFunction:
             pytest.skip("Handler function not captured by mock decorator")
 
     @patch("prompts_mcp.main.app")
-    def test_register_prompt_without_input_argument(self, mock_app):
+    def test_register_prompt_without_input_argument(
+        self, mock_app: Any
+    ) -> None:
         """Test that the registered prompt handler works without input
         arguments."""
         sample_prompt_data = {
@@ -366,7 +369,7 @@ class TestRegisterPromptFunction:
         }
 
         # Create a mock decorator that returns the function unchanged
-        def mock_decorator(func):
+        def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
@@ -391,7 +394,7 @@ class TestRegisterPromptFunction:
         )
 
     @patch("prompts_mcp.main.app")
-    def test_register_prompt_with_empty_input(self, mock_app):
+    def test_register_prompt_with_empty_input(self, mock_app: Any) -> None:
         """Test that empty input doesn't modify the result."""
         sample_prompt_data = {
             "name": "test_prompt",
@@ -401,7 +404,7 @@ class TestRegisterPromptFunction:
         }
 
         # Create a mock decorator that returns the function unchanged
-        def mock_decorator(func):
+        def mock_decorator(func: Any) -> Any:
             return func
 
         mock_app.prompt.return_value = mock_decorator
@@ -432,7 +435,9 @@ class TestSignalHandlerFunction:
 
     @patch("prompts_mcp.main.logger")
     @patch("os._exit")
-    def test_signal_handler_first_interrupt(self, mock_exit, mock_logger):
+    def test_signal_handler_first_interrupt(
+        self, mock_exit: Any, mock_logger: Any
+    ) -> None:
         """Test handling of first interrupt signal."""
         # Reset global signal count
         import prompts_mcp.main
@@ -452,7 +457,9 @@ class TestSignalHandlerFunction:
 
     @patch("prompts_mcp.main.logger")
     @patch("os._exit")
-    def test_signal_handler_second_interrupt(self, mock_exit, mock_logger):
+    def test_signal_handler_second_interrupt(
+        self, mock_exit: Any, mock_logger: Any
+    ) -> None:
         """Test handling of second interrupt signal."""
         # Set signal count to 1 to simulate second interrupt
         import prompts_mcp.main
@@ -472,8 +479,8 @@ class TestSignalHandlerFunction:
     @patch("signal.signal")
     @patch("os._exit")
     def test_signal_handler_sets_up_second_handler(
-        self, mock_exit, mock_signal
-    ):
+        self, mock_exit: Any, mock_signal: Any
+    ) -> None:
         """Test that signal handler sets up handler for second interrupt."""
         import prompts_mcp.main
 
