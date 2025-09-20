@@ -27,7 +27,6 @@ def clean():
     dirs_to_remove = [
         "dist",
         "htmlcov",
-        "prompts_mcp.egg-info",
         ".pytest_cache",
         ".ruff_cache",
         ".venv",
