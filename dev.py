@@ -76,8 +76,7 @@ def main() -> None:
         print("  sync         Sync dependencies")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
-        print("  check        Check code without fixing it")
-        print("  mypy         Run mypy type checking")
+        print("  check        Run type checking with mypy")
         print("  test         Run tests (accepts pytest arguments)")
         print("")
         print("  all          Run all above")
@@ -100,14 +99,13 @@ def main() -> None:
         ),
         "format": ("uv run ruff format .", "Formatting code"),
         "lint": ("uv run ruff check . --fix", "Linting code"),
-        "check": ("uv run ruff check .", "Checking code"),
-        "mypy": ("uv run mypy .", "Running mypy type checking"),
+        "check": ("uv run mypy .", "Running type checking"),
         "clean": (None, "Cleaning build artifacts"),  # Handled by function
     }
 
     if command == "all":
         print("Running all checks...")
-        for cmd_name in ["sync", "format", "lint", "check", "mypy", "test"]:
+        for cmd_name in ["sync", "format", "lint", "check", "test"]:
             if cmd_name == "test":
                 # For 'all' command, run tests without additional arguments
                 run_command("uv run pytest", "Running tests")
@@ -132,10 +130,7 @@ def main() -> None:
             run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
-        print(
-            "Available commands: sync, format, lint, check, mypy, test, "
-            "clean, all"
-        )
+        print("Available commands: sync, format, lint, check, test, clean, all")
         sys.exit(1)
 
 
