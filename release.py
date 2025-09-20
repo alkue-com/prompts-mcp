@@ -137,6 +137,12 @@ def main():
         ]
         run_command(" ".join(bump_cmd), "Creating pre-release")
 
+        # Run changelog command for prerelease
+        changelog_cmd = ["uv", "run", "cz", "changelog", "--incremental"]
+        run_command(
+            " ".join(changelog_cmd), "Generating changelog for prerelease"
+        )
+
         # Run build command
         run_command("uv build", "Building package")
 
@@ -152,6 +158,17 @@ def main():
         # Run bump command
         bump_cmd = ["uv", "run", "cz", "bump", "--allow-no-commit"]
         run_command(" ".join(bump_cmd), "Creating release")
+
+        # Run changelog command for release
+        changelog_cmd = [
+            "uv",
+            "run",
+            "cz",
+            "changelog",
+            "--merge-prerelease",
+            "--incremental",
+        ]
+        run_command(" ".join(changelog_cmd), "Generating changelog for release")
 
         # Run build command
         run_command("uv build", "Building package")
