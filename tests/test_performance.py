@@ -2,11 +2,16 @@
 Performance tests for prompts-mcp package.
 """
 
+import concurrent.futures
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
+
+from prompts_mcp.main import PromptsMCPServer, load_prompt_file
 
 
 @pytest.mark.slow
@@ -18,7 +23,6 @@ class TestPerformance:
         prompt_file = temp_prompts_dir / "test_prompt_1.md"
 
         # Measure time for multiple loads
-        from prompts_mcp.main import load_prompt_file
 
         start_time = time.time()
         for _ in range(100):
@@ -36,7 +40,6 @@ class TestPerformance:
             prompt_file.write_text(f"# Prompt {i}\n\nContent for prompt {i}.")
 
         # Create test server instance
-        from prompts_mcp.main import PromptsMCPServer
 
         server = PromptsMCPServer.__new__(PromptsMCPServer)
         server.prompts_dir = temp_prompts_dir
@@ -44,7 +47,6 @@ class TestPerformance:
         server.signal_count = 0
 
         # Mock the register_prompt method
-        from unittest.mock import patch
 
         with patch.object(server, "register_prompt"):
             start_time = time.time()
@@ -57,7 +59,6 @@ class TestPerformance:
 
     def test_memory_usage_with_large_files(self) -> None:
         """Test memory usage with large prompt files."""
-        import tempfile
 
         with tempfile.TemporaryDirectory() as temp_dir:
             prompts_dir = Path(temp_dir) / "prompts"
@@ -69,7 +70,6 @@ class TestPerformance:
             large_file.write_text(large_content)
 
             # Load the large file
-            from prompts_mcp.main import load_prompt_file
 
             result = load_prompt_file(large_file)
 
@@ -80,7 +80,6 @@ class TestPerformance:
 
     def test_concurrent_prompt_loading(self, temp_prompts_dir: Any) -> None:
         """Test concurrent loading of multiple prompt files."""
-        import concurrent.futures
 
         # Create multiple prompt files
         prompt_files = []
@@ -92,8 +91,6 @@ class TestPerformance:
             prompt_files.append(prompt_file)
 
         def load_single_prompt(prompt_file: Any) -> Any:
-            from prompts_mcp.main import load_prompt_file
-
             return load_prompt_file(prompt_file)
 
         # Load prompts concurrently

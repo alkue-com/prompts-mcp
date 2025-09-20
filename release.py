@@ -105,6 +105,7 @@ def build_uv_publish_command(repository: str = "pypi") -> list[str]:
 
 
 def main() -> None:
+    """Main entry point for the release script."""
     prerelease_type = sys.argv[1] if len(sys.argv) > 1 else None
 
     # Check if we're on main or master branch
@@ -136,7 +137,7 @@ def main() -> None:
         publish_cmd = build_uv_publish_command("testpypi")
         print("Publishing to testpypi...")
         print(f"Running: {' '.join(publish_cmd)}")
-        result = subprocess.run(publish_cmd)
+        result = subprocess.run(publish_cmd, check=False)
         if result.returncode != 0:
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)
@@ -152,7 +153,7 @@ def main() -> None:
         publish_cmd = build_uv_publish_command("pypi")
         print("Publishing to PyPI...")
         print(f"Running: {' '.join(publish_cmd)}")
-        result = subprocess.run(publish_cmd)
+        result = subprocess.run(publish_cmd, check=False)
         if result.returncode != 0:
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)

@@ -9,18 +9,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
-def create_test_server(prompts_dir: Path | None = None, app: Any = None) -> Any:
-    """Create a test server instance with mocked dependencies."""
-    from prompts_mcp.main import PromptsMCPServer
-
-    # Create a mock server instance
-    server = PromptsMCPServer.__new__(PromptsMCPServer)
-    server.prompts_dir = prompts_dir
-    server.app = app
-    server.signal_count = 0
-
-    return server
+from prompts_mcp.main import load_prompt_file
+from tests.test_utils import create_test_server
 
 
 @pytest.mark.integration
@@ -143,8 +133,6 @@ Use carefully.
                 prompt_file = prompts_dir / test_case["filename"]
                 prompt_file.write_text(test_case["content"])
 
-                from prompts_mcp.main import load_prompt_file
-
                 result = load_prompt_file(prompt_file)
 
                 assert result["name"] == test_case["filename"].replace(
@@ -207,8 +195,6 @@ Use carefully.
             )
             large_file = prompts_dir / "large_prompt.md"
             large_file.write_text(large_content)
-
-            from prompts_mcp.main import load_prompt_file
 
             result = load_prompt_file(large_file)
 

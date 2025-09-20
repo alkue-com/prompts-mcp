@@ -13,7 +13,7 @@ def run_command(cmd: str, description: str = "") -> None:
         print(f"{description}...")
 
     print(f"Running: {cmd}")
-    result = subprocess.run(cmd, shell=True)
+    result = subprocess.run(cmd, shell=True, check=False)
     if result.returncode != 0:
         print(f"Command failed with exit code {result.returncode}")
         sys.exit(result.returncode)
@@ -69,6 +69,7 @@ def clean() -> None:
 
 
 def main() -> None:
+    """Main entry point for the development script."""
     if len(sys.argv) < 2:
         print("Usage: ./dev.py <command> [args...]")
         print("")

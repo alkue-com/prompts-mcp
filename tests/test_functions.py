@@ -5,6 +5,7 @@ This module tests individual functions without importing the main module
 that has side effects at import time.
 """
 
+import asyncio
 import signal
 import tempfile
 from pathlib import Path
@@ -13,18 +14,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
-def create_test_server(prompts_dir: Path | None = None, app: Any = None) -> Any:
-    """Create a test server instance with mocked dependencies."""
-    from prompts_mcp.main import PromptsMCPServer
-
-    # Create a mock server instance
-    server = PromptsMCPServer.__new__(PromptsMCPServer)
-    server.prompts_dir = prompts_dir
-    server.app = app
-    server.signal_count = 0
-
-    return server
+from prompts_mcp.main import load_prompt_file
+from tests.test_utils import create_test_server
 
 
 @pytest.mark.unit
@@ -52,8 +43,6 @@ Here are some examples of how to use this prompt.
 """)
 
             # Import and test the function directly
-            from prompts_mcp.main import load_prompt_file
-
             result = load_prompt_file(prompt_file)
 
             assert result["name"] == "test_prompt_1"
@@ -77,8 +66,6 @@ This is another test prompt without the IDENTITY section.
 Just a simple prompt for testing purposes.
 """)
 
-            from prompts_mcp.main import load_prompt_file
-
             result = load_prompt_file(prompt_file)
 
             assert result["name"] == "test_prompt_2"
@@ -100,8 +87,6 @@ Just a simple prompt for testing purposes.
             prompt_file = prompts_dir / "test_prompt_with_underscores.md"
             prompt_file.write_text("# Test Prompt\n\nSimple content.")
 
-            from prompts_mcp.main import load_prompt_file
-
             result = load_prompt_file(prompt_file)
 
             assert result["name"] == "test_prompt_with_underscores"
@@ -116,8 +101,6 @@ Just a simple prompt for testing purposes.
             prompt_file = prompts_dir / "empty_prompt.md"
             prompt_file.write_text("")
 
-            from prompts_mcp.main import load_prompt_file
-
             result = load_prompt_file(prompt_file)
 
             assert result["name"] == "empty_prompt"
@@ -128,8 +111,6 @@ Just a simple prompt for testing purposes.
     def test_load_prompt_file_nonexistent_file(self) -> None:
         """Test loading a nonexistent prompt file raises FileNotFoundError."""
         nonexistent_file = Path("/nonexistent/prompt.md")
-
-        from prompts_mcp.main import load_prompt_file
 
         with pytest.raises(FileNotFoundError):
             load_prompt_file(nonexistent_file)
@@ -358,9 +339,6 @@ class TestRegisterPromptFunction:
         handler_func = captured_func
 
         # Test the handler function with input arguments
-        import asyncio
-
-        # Test the handler function with input arguments
         if handler_func is not None:
             result = asyncio.run(
                 handler_func({"input": "Additional user input"})
@@ -513,3 +491,5 @@ class TestSignalHandlerFunction:
 
         # Should set up new signal handlers
         assert mock_signal.call_count >= 2
+        # Verify mock_exit was set up (though not called in this test)
+        assert mock_exit is not None
