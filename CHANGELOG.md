@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 - **changelog**: add incremental generation and standardize format
 
+## 1.5.0rc2 (2025-09-20)
+
+### Refactor
+
+- **changelog**: add incremental generation and standardize format
+
 ## 1.5.0rc0 (2025-09-20)
 
 ### Feat
