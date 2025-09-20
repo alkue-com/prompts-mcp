@@ -156,7 +156,6 @@ def main():
             "run",
             "cz",
             "bump",
-            "--changelog",
             "--allow-no-commit",
         ]
         run_command(" ".join(bump_cmd), "Creating release")

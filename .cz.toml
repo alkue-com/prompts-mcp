@@ -6,3 +6,6 @@ version_files = [
     "pyproject.toml:version",
     "prompts_mcp/__init__.py:__version__"
 ]
+update_changelog_on_bump = true
+changelog_merge_prerelease = true
+changelog_incremental = true
