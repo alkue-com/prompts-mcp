@@ -27,6 +27,7 @@ def clean() -> None:
     dirs_to_remove = [
         "dist",
         "htmlcov",
+        ".mypy_cache",
         ".pytest_cache",
         ".ruff_cache",
         ".venv",
