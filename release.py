@@ -34,7 +34,7 @@ def run_command(cmd: str, description: str = "") -> None:
         print(f"{description}...")
 
     print(f"Running: {cmd}")
-    result = subprocess.run(cmd, shell=True)
+    result = subprocess.run(cmd, shell=True, check=False)
     if result.returncode != 0:
         print(f"Command failed with exit code {result.returncode}")
         sys.exit(result.returncode)
@@ -43,7 +43,10 @@ def run_command(cmd: str, description: str = "") -> None:
 def get_current_branch() -> str:
     """Get the current git branch."""
     result = subprocess.run(
-        ["git", "branch", "--show-current"], capture_output=True, text=True
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     if result.returncode != 0:
         print("Error: Failed to get current branch")
@@ -54,7 +57,7 @@ def get_current_branch() -> str:
 def check_working_tree_clean() -> None:
     """Check if the working tree has uncommitted changes."""
     result = subprocess.run(
-        ["git", "status", "-s"], capture_output=True, text=True
+        ["git", "status", "-s"], capture_output=True, text=True, check=False
     )
     if result.returncode != 0:
         print("Error: Failed to check git status")
