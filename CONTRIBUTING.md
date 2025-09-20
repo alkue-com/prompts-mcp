@@ -1,6 +1,7 @@
 # Contributing
 
-Have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+if not already present.
 
 ## Development
 
@@ -14,7 +15,7 @@ Run the server:
 
 Use `./dev.py` for common tasks. Run without arguments for list of all tasks.
 
-To run all the checks (sync, format, lint, mypy, test) at once:
+To run all the tasks (sync, format, lint, check, test) at once:
 
     ./dev.py all
 
