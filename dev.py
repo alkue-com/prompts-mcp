@@ -92,7 +92,7 @@ def main():
 
     commands = {
         "sync": (
-            "uv sync --dev && "
+            "uv sync && "
             "uv run pre-commit install --hook-type pre-commit "
             "--hook-type commit-msg",
             "Syncing dependencies",
