@@ -72,7 +72,6 @@ disallow_untyped_decorators = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
-exclude = ["dist/"]
 
 [tool.commitizen]
 bump_message = "chore: Release $new_version"
