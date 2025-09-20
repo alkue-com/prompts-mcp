@@ -28,9 +28,10 @@ def clean():
         "build",
         "dist",
         "htmlcov",
+        "prompts_mcp.egg-info",
         ".pytest_cache",
         ".ruff_cache",
-        "prompts_mcp.egg-info",
+        ".venv",
     ]
 
     # Files to remove
@@ -73,7 +74,7 @@ def main():
         print("Usage: ./dev.py <command> [args...]")
         print("")
         print("Commands:")
-        print("  install      Install all Python dependencies")
+        print("  sync         Sync dependencies (with extras)")
         print("  format       Format code with ruff")
         print("  lint         Lint and fix code with ruff")
         print("  check        Check code without fixing it")
@@ -91,11 +92,11 @@ def main():
     command = sys.argv[1]
 
     commands = {
-        "install": (
+        "sync": (
             "uv sync --all-extras && "
             "uv run pre-commit install --hook-type pre-commit "
             "--hook-type commit-msg",
-            "Installing Python dependencies",
+            "Syncing dependencies",
         ),
         "format": ("uv run ruff format .", "Formatting code"),
         "lint": ("uv run ruff check . --fix", "Linting code"),
@@ -105,7 +106,7 @@ def main():
 
     if command == "all":
         print("Running all checks...")
-        for cmd_name in ["install", "format", "lint", "check", "test"]:
+        for cmd_name in ["sync", "format", "lint", "check", "test"]:
             if cmd_name == "test":
                 # For 'all' command, run tests without additional arguments
                 run_command("uv run pytest", "Running tests")
@@ -128,9 +129,7 @@ def main():
         run_command(cmd, desc)
     else:
         print(f"Unknown command: {command}")
-        print(
-            "Available commands: install, format, lint, check, test, clean, all"
-        )
+        print("Available commands: sync, format, lint, check, test, clean, all")
         sys.exit(1)
 
 

@@ -14,7 +14,7 @@ Run the server:
 
 Use `./dev.py` for common tasks. Run without arguments for list of all tasks.
 
-To run all the checks (install, format, lint, check, test) at once:
+To run all the checks (sync, format, lint, check, test) at once:
 
     ./dev.py all
 
