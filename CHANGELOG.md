@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 We use [PEP 440](https://peps.python.org/pep-0440/) version scheme and
 do [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## 1.5.2rc3 (2025-09-21)
+
+### Fix
+
+- **config**: add repository validation and enable ruff rules
+
 ## 1.5.2rc2 (2025-09-21)
 
 ### Refactor
