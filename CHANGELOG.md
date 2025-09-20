@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 We use [PEP 440](https://peps.python.org/pep-0440/) version scheme and
 do [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## 1.5.2rc1 (2025-09-21)
+
+### Fix
+
+- **release**: add check=False to subprocess.run calls
+- **dev**: add mypy_cache to clean directories
+- **dev**: remove obsolete egg-info directory from clean targets
+- **pyproject**: remove tag_format and changelog_incremental config
+
+### Refactor
+
+- **tests**: extract shared test utilities and optimize imports
+- **main**: convert global functions to class-based architecture
+- **dev**: consolidate mypy check into check command
+
+### Perf
+
+- **main**: optimize load_all_prompts with local variable caching
+
 ## 1.5.1 (2025-09-20)
 
 ### Refactor
