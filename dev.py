@@ -14,6 +14,20 @@ def run_command(cmd: str, description: str = "") -> None:
         print(f"{description}...")
 
     print(f"Running: {cmd}")
+
+    # Handle command chaining (&&) across platforms
+    if "&&" in cmd:
+        commands = [c.strip() for c in cmd.split("&&")]
+        for i, sub_cmd in enumerate(commands):
+            if i > 0:
+                print(f"Running chained command: {sub_cmd}")
+            run_single_command(sub_cmd)
+    else:
+        run_single_command(cmd)
+
+
+def run_single_command(cmd: str) -> None:
+    """Run a single command without chaining."""
     # Use shell=True only on Unix-like systems, split command on Windows
     if sys.platform == "win32":
         # On Windows, split the command and use list format

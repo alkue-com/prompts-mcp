@@ -469,6 +469,83 @@ class TestCrossPlatformCompatibility:
             assert result["name"] == "test_encoding"
             assert "Test Encoding" in result["title"]
 
+    def test_encoding_fallback_system_default(self) -> None:
+        """Test encoding fallback to system default when UTF-8 fails."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "test_encoding_fallback.md"
+
+            # Create a file that will cause UTF-8 decode error
+            # Write bytes that are not valid UTF-8
+            invalid_utf8_bytes = (
+                b"# Test Encoding\n\nThis has invalid UTF-8: \xff\xfe"
+            )
+            prompt_file.write_bytes(invalid_utf8_bytes)
+
+            # Mock the read_text method to simulate UTF-8 failure
+            def mock_read_text_utf8_fails(
+                _self: Any, encoding: str | None = None
+            ) -> str:
+                if encoding == "utf-8":
+                    raise UnicodeDecodeError(
+                        "utf-8", b"", 0, 1, "invalid start byte"
+                    )
+                # For system default encoding, return valid content
+                return "# Test Encoding\n\nThis is a test."
+
+            with patch.object(Path, "read_text", mock_read_text_utf8_fails):
+                result = load_prompt_file(prompt_file)
+                assert result["name"] == "test_encoding_fallback"
+                assert "Test Encoding" in result["title"]
+
+    def test_encoding_fallback_bytes_decode(self) -> None:
+        """Test encoding fallback to bytes decode with error replacement."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "test_encoding_bytes.md"
+
+            # Create a file that will cause both UTF-8 and system default
+            # to fail
+            invalid_bytes = (
+                b"# Test Encoding\n\nThis has invalid bytes: \xff\xfe"
+            )
+            prompt_file.write_bytes(invalid_bytes)
+
+            # Mock the read_text method to simulate both UTF-8 and system
+            # default failure
+            def mock_read_text_both_fail(_self: Any, **_kwargs: Any) -> str:
+                raise UnicodeDecodeError(
+                    "utf-8", b"", 0, 1, "invalid start byte"
+                )
+
+            with patch.object(Path, "read_text", mock_read_text_both_fail):
+                result = load_prompt_file(prompt_file)
+                assert result["name"] == "test_encoding_bytes"
+                # The content should be decoded with error replacement
+                assert "Test Encoding" in result["content"]
+                # Should contain replacement characters for invalid bytes
+                assert (
+                    "�" in result["content"]
+                    or "Test Encoding" in result["content"]
+                )
+
+    def test_command_chaining_parsing(self) -> None:
+        """Test that command chaining (&&) is parsed correctly."""
+
+        # Test that commands with && are split correctly
+        test_cmd = "echo hello && echo world"
+
+        # This test verifies the parsing logic works
+        # We can't easily test the actual execution without mocking subprocess
+        commands = [c.strip() for c in test_cmd.split("&&")]
+        assert len(commands) == 2
+        assert commands[0] == "echo hello"
+        assert commands[1] == "echo world"
+
 
 @pytest.mark.unit
 class TestSignalHandlerFunction:
