@@ -66,15 +66,71 @@ jobs:
           fi
 
       - name: Create rc
+        env:
+          TESTPYPI_TOKEN: ${{ secrets.TESTPYPI_TOKEN }}
         run: |
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
 
+          # Create .pypirc file for testpypi authentication if token is available
+          if [ -n "$TESTPYPI_TOKEN" ]; then
+            echo "Creating .pypirc for testpypi authentication..."
+            mkdir -p ~/.config
+            cat > ~/.pypirc << EOF
+          [distutils]
+          index-servers =
+              pypi
+              testpypi
+
+          [pypi]
+          repository = https://upload.pypi.org/legacy/
+
+          [testpypi]
+          repository = https://test.pypi.org/legacy/
+          username = __token__
+          password = $TESTPYPI_TOKEN
+          EOF
+            echo "✅ .pypirc configured for testpypi"
+          else
+            echo "⚠️  No TESTPYPI_TOKEN found, publishing may fail"
+          fi
+
           # Run the release script and capture exit code
           echo "Running release script..."
-          uv run python release.py rc > /tmp/release_output.log 2>&1
-          release_exit_code=$?
+          if [ -n "$TESTPYPI_TOKEN" ]; then
+            # Run full release script with publishing
+            uv run python release.py rc > /tmp/release_output.log 2>&1
+            release_exit_code=$?
+          else
+            # Run only the bump and build parts, skip publishing
+            echo "⚠️  Skipping publishing due to missing TESTPYPI_TOKEN"
+            echo "Running bump and build only..."
+
+            # Run bump command
+            echo "Creating pre-release..."
+            uv run cz bump --prerelease rc --yes > /tmp/release_output.log 2>&1
+            bump_exit_code=$?
+
+            if [ $bump_exit_code -eq 0 ]; then
+              echo "✅ Version bump completed successfully"
+              # Run build command
+              echo "Building package..."
+              uv build >> /tmp/release_output.log 2>&1
+              build_exit_code=$?
+
+              if [ $build_exit_code -eq 0 ]; then
+                echo "✅ Package build completed successfully"
+                release_exit_code=0
+              else
+                echo "❌ Package build failed with exit code $build_exit_code"
+                release_exit_code=$build_exit_code
+              fi
+            else
+              echo "❌ Version bump failed with exit code $bump_exit_code"
+              release_exit_code=$bump_exit_code
+            fi
+          fi
 
           echo "Release script exit code: $release_exit_code"
           echo "Release script output:"
