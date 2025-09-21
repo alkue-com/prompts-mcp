@@ -52,14 +52,18 @@ Use it in [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp
 
 ## Release
 
-Run `release.py` to bump version, do changelog, build packages and publish them.
+Use `release.py` to bump version, update `CHANGELOG.md` and create a git tag.
+
+If `--publish <index>` is given, the created `dist/` files are published there.
 
 **Note:** The script looks for PyPI credentials in user's `.pypirc`.
 
-Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
+Create release and publish it to [PyPI](https://pypi.org/project/prompts-mcp/):
 
-    uv run release.py rc
+    uv run release.py --publish pypi
 
-Build and publish to [PyPI](https://pypi.org/project/prompts-mcp/):
+You may distribute pre-release versions e.g.:
 
-    uv run release.py
+    uv run release.py alpha --publish testpypi
+    uv run release.py beta --publish testpypi
+    uv run release.py rc --publish pypi

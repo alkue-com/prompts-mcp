@@ -168,23 +168,28 @@ def build_uv_publish_command(repository: str = "pypi") -> list[str]:
     return ["uv", "publish"] + opts
 
 
-def parse_arguments() -> tuple[str | None, bool]:
+def parse_arguments() -> tuple[str | None, str | None]:
     """Parse command line arguments.
 
     Returns:
-        tuple: (prerelease_type, should_publish)
+        tuple: (prerelease_type, publish_index)
     """
     args = sys.argv[1:]
     prerelease_type = None
-    should_publish = False
+    publish_index = None
     i = 0
     while i < len(args):
         if args[i] == "--publish":
-            should_publish = True
+            if i + 1 >= len(args):
+                print("Error: --publish requires an index name")
+                print("Example: --publish pypi")
+                sys.exit(1)
+            publish_index = args[i + 1]
+            i += 1  # Skip the index name
         elif args[i] in ["alpha", "beta", "rc"]:
             prerelease_type = args[i]
         i += 1
-    return prerelease_type, should_publish
+    return prerelease_type, publish_index
 
 
 def validate_release_environment() -> None:
@@ -205,7 +210,40 @@ def validate_release_environment() -> None:
     clear_dist_directory()
 
 
-def run_prerelease(prerelease_type: str, should_publish: bool) -> None:
+def run_bump_command(bump_cmd: list[str], publish_index: str | None) -> bool:
+    """Run bump command and handle 'no commits found' error.
+
+    Returns:
+        bool: True if bump succeeded or no commits found with publish enabled,
+            False if no commits found without publish enabled.
+    """
+    bump_result = subprocess.run(" ".join(bump_cmd), shell=True, check=False)
+    if bump_result.returncode == 3:
+        print("No commits found for bumping, continuing with current version")
+        if not publish_index:
+            print("Skipping publish (use --publish <index> to enable)")
+            return False
+    elif bump_result.returncode != 0:
+        print(f"Bump command failed with exit code {bump_result.returncode}")
+        sys.exit(bump_result.returncode)
+    return True
+
+
+def run_publish_command(publish_index: str | None) -> None:
+    """Run publish command if publish_index is specified."""
+    if publish_index:
+        publish_cmd = build_uv_publish_command(publish_index)
+        print(f"Publishing to {publish_index}...")
+        print(f"Running: {' '.join(publish_cmd)}")
+        result = subprocess.run(publish_cmd, check=False)
+        if result.returncode != 0:
+            print(f"Publish failed with exit code {result.returncode}")
+            sys.exit(result.returncode)
+    else:
+        print("Skipping publish (use --publish <index> to enable)")
+
+
+def run_prerelease(prerelease_type: str, publish_index: str | None) -> None:
     """Run prerelease process."""
     print(f"Creating pre-release ({prerelease_type})")
 
@@ -219,56 +257,42 @@ def run_prerelease(prerelease_type: str, should_publish: bool) -> None:
         prerelease_type,
         "--yes",
     ]
-    run_command(" ".join(bump_cmd), "Creating pre-release")
+
+    # Run bump command and handle errors
+    if not run_bump_command(bump_cmd, publish_index):
+        return
 
     # Run build command
     run_command("uv build", "Building package")
 
-    # Run publish command with testpypi credentials
-    # (only if --publish flag is set)
-    if should_publish:
-        publish_cmd = build_uv_publish_command("testpypi")
-        print("Publishing to testpypi...")
-        print(f"Running: {' '.join(publish_cmd)}")
-        result = subprocess.run(publish_cmd, check=False)
-        if result.returncode != 0:
-            print(f"Publish failed with exit code {result.returncode}")
-            sys.exit(result.returncode)
-    else:
-        print("Skipping publish to testpypi (use --publish to enable)")
+    # Run publish command
+    run_publish_command(publish_index)
 
 
-def run_release(should_publish: bool) -> None:
+def run_release(publish_index: str | None) -> None:
     """Run regular release process."""
     # Run bump command
     bump_cmd = ["uv", "run", "cz", "bump", "--yes"]
-    run_command(" ".join(bump_cmd), "Creating release")
+
+    # Run bump command and handle errors
+    if not run_bump_command(bump_cmd, publish_index):
+        return
 
     # Run build command
     run_command("uv build", "Building package")
 
-    # Run publish command with pypi credentials
-    # (only if --publish flag is set)
-    if should_publish:
-        publish_cmd = build_uv_publish_command("pypi")
-        print("Publishing to PyPI...")
-        print(f"Running: {' '.join(publish_cmd)}")
-        result = subprocess.run(publish_cmd, check=False)
-        if result.returncode != 0:
-            print(f"Publish failed with exit code {result.returncode}")
-            sys.exit(result.returncode)
-    else:
-        print("Skipping publish to PyPI (use --publish to enable)")
+    # Run publish command
+    run_publish_command(publish_index)
 
 
 def main() -> None:
     """Main entry point for the release script."""
-    prerelease_type, should_publish = parse_arguments()
+    prerelease_type, publish_index = parse_arguments()
     validate_release_environment()
     if prerelease_type:
-        run_prerelease(prerelease_type, should_publish)
+        run_prerelease(prerelease_type, publish_index)
     else:
-        run_release(should_publish)
+        run_release(publish_index)
 
 
 if __name__ == "__main__":
