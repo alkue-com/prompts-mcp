@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 We use [PEP 440](https://peps.python.org/pep-0440/) version scheme and
 do [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## 1.6.0 (2025-09-21)
+
 ## 1.6.0rc1 (2025-09-21)
 
 ### Feat
