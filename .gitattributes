@@ -1,0 +1,25 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Declare files that will always have LF line endings on checkout
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+.editorconfig text eol=lf
+.gitignore text eol=lf
+.pre-commit-config.yaml text eol=lf
+.python-version text eol=lf
+pyproject.toml text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
