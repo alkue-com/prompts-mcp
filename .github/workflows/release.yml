@@ -36,9 +36,9 @@ jobs:
 
       - name: Create conventional commit
         run: |
-          echo "" > .dummy
+          echo "# Dummy file for release" > .dummy
           git add .dummy
-          git commit -m "fix(dummy): Add empty file"
+          git commit -m "fix(dummy): add dummy file for testing release script"
 
       - name: Create release
         run: |
