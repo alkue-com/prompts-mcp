@@ -18,10 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: "latest"
+      - name: Install uv (macOS & Linux)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
       - name: Install .python-version
         run: |
@@ -30,7 +35,7 @@ jobs:
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
-          export PROMPTS_DIR="$GITHUB_WORKSPACE/tests/test_prompts"
+          export PROMPTS_DIR="$(pwd)/tests/test_prompts"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
           sleep 3
@@ -42,7 +47,7 @@ jobs:
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
-          $PROMPTS_DIR = "$env:GITHUB_WORKSPACE\tests\test_prompts"
+          $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
           $env:PROMPTS_DIR = $PROMPTS_DIR
           Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
           Start-Sleep -Seconds 3
