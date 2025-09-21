@@ -24,7 +24,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-mock",
-    "pytest-sugar",
+    "pytest-modern",
     "ruff",
 ]
 git = ["commitizen", "pre-commit"]
@@ -88,8 +88,6 @@ warn_unreachable = true
 testpaths = "tests"
 addopts = [
     "-v",
-    "--old-summary",
-    "--force-sugar",
     "--strict-markers",
     "--cov=prompts_mcp",
     "--cov-report=term-missing",
