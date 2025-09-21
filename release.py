@@ -48,17 +48,12 @@ def run_command(cmd: str, description: str = "") -> None:
 
 def run_single_command(cmd: str) -> None:
     """Run a single command without chaining."""
-    # Use shell=True only on Unix-like systems, split command on Windows
-    if sys.platform == "win32":
-        # On Windows, use shlex.split for proper argument parsing
-        try:
-            result = subprocess.run(shlex.split(cmd), check=False)
-        except FileNotFoundError:
-            print(f"Command not found: {cmd}")
-            sys.exit(1)
-    else:
-        # On Unix-like systems, use shell=True
-        result = subprocess.run(cmd, shell=True, check=False)
+    try:
+        result = subprocess.run(shlex.split(cmd), check=False)
+    except FileNotFoundError:
+        print(f"Command not found: {cmd}")
+        sys.exit(1)
+
     if result.returncode != 0:
         print(f"Command failed with exit code {result.returncode}")
         sys.exit(result.returncode)
@@ -217,7 +212,7 @@ def run_bump_command(bump_cmd: list[str], publish_index: str | None) -> bool:
         bool: True if bump succeeded or no commits found with publish enabled,
             False if no commits found without publish enabled.
     """
-    bump_result = subprocess.run(" ".join(bump_cmd), shell=True, check=False)
+    bump_result = subprocess.run(bump_cmd, check=False)
     if bump_result.returncode == 3:
         print("No commits found for bumping, continuing with current version")
         if not publish_index:
