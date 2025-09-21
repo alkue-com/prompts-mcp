@@ -8,11 +8,7 @@ permissions: read-all
 
 jobs:
   releasepy:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
@@ -169,3 +165,30 @@ jobs:
           fi
 
           echo "✓ Commit message format verified: $COMMIT_MESSAGE"
+
+      - name: Verify no version change on second run
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Testing idempotent release - running release script again..."
+
+          # Store current version before second run
+          ORIGINAL_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "Original version: $ORIGINAL_VERSION"
+
+          # Run release script again
+          echo "Running release script again..."
+          uv run release.py
+
+          # Check if version changed
+          NEW_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "Version after second run: $NEW_VERSION"
+
+          if [ "$ORIGINAL_VERSION" != "$NEW_VERSION" ]; then
+            echo "Error: Version changed on second release run!"
+            echo "Original: $ORIGINAL_VERSION"
+            echo "New: $NEW_VERSION"
+            echo "Release should be idempotent when no changes exist"
+            exit 1
+          fi
+
+          echo "✓ Release is idempotent - version unchanged on second run"
