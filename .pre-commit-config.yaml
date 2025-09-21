@@ -28,16 +28,17 @@ repos:
       - id: destroyed-symlinks
       - id: check-executables-have-shebangs
 
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: 3.2.471
+    hooks:
+      - id: checkov_diff
+        args: ["--quiet", "-f"]
+
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: 3.4.0
     hooks:
       - id: editorconfig-checker
         alias: ec
-
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.24.1
-    hooks:
-      - id: validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.1
