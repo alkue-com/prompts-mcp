@@ -41,6 +41,17 @@ jobs:
 
       - name: Create rc
         run: |
+          # Ensure working tree is clean before starting
+          echo "Checking git status..."
+          git status --porcelain
+
+          # Clean up any uncommitted changes from previous runs
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Cleaning up uncommitted changes..."
+            git reset --hard HEAD
+            git clean -fd
+          fi
+
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
