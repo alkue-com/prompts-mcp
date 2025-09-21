@@ -48,23 +48,17 @@ jobs:
 
           This commit is created by the GitHub Actions workflow to test the release process.
           It should trigger a patch version bump when running commitizen."
-          echo "✅ Test commit created"
-
-          # Debug: Show recent commits and tags
-          echo "Recent commits:"
-          git log --oneline -3
-          echo "Recent tags:"
-          git tag --sort=-version:refname | head -5
-
-          # Verify the commit was created properly
-          echo "Verifying test commit:"
-          git show --stat HEAD
 
       - name: Create rc
         run: |
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
+
+          # Run the release script and capture exit code
+          echo "Running release script..."
+          uv run python release.py rc > /tmp/release_output.log 2>&1
+          release_exit_code=$?
 
           if [ $release_exit_code -eq 0 ]; then
             echo "✅ Release script completed successfully"
@@ -173,15 +167,3 @@ jobs:
           fi
 
           echo "✅ Create rc functionality test passed!"
-      - name: Cleanup test files
-        run: |
-          # Restore original commitizen configuration
-          echo "Restoring original commitizen configuration..."
-          sed -i 's/changelog_incremental = false/changelog_incremental = true/' pyproject.toml
-
-          # Remove the test file created during the workflow
-          if [ -f "test_release.md" ]; then
-            rm test_release.md
-            echo "✅ Test file cleaned up"
-          fi
-
