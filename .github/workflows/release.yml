@@ -43,7 +43,10 @@ jobs:
           # Create a dummy commit to test the release process
           echo "# Test commit for release workflow" >> test_release.md
           git add test_release.md
-          git commit -m "feat: add test commit for release workflow validation"
+          git commit -m "feat: add test commit for release workflow validation
+
+          This commit is created by the GitHub Actions workflow to test the release process.
+          It should trigger a patch version bump when running commitizen."
           echo "✅ Test commit created"
 
           # Debug: Show recent commits and tags
@@ -52,11 +55,21 @@ jobs:
           echo "Recent tags:"
           git tag --sort=-version:refname | head -5
 
+          # Verify the commit was created properly
+          echo "Verifying test commit:"
+          git show --stat HEAD
+
       - name: Create rc
         run: |
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
+
+          # Debug: Show what commitizen will see
+          echo "Commits since last tag:"
+          git log --oneline $(git describe --tags --abbrev=0)..HEAD 2>/dev/null || git log --oneline -5
+          echo "Current HEAD commit:"
+          git log --oneline -1
 
           # Run the RC creation and capture output
           echo "Running: uv run release.py rc"
@@ -65,20 +78,6 @@ jobs:
 
           if [ $release_exit_code -eq 0 ]; then
             echo "✅ Release script completed successfully"
-          elif [ $release_exit_code -eq 16 ]; then
-            echo "⚠️ Commitizen failed with exit code 16 (NoCommitsFoundError)"
-            echo "This means there are no new conventional commits to release"
-            echo "Checking if this is expected..."
-
-            # Check if we have the test commit we just created
-            if git log --oneline -1 | grep -q "feat: add test commit for release workflow validation"; then
-              echo "❌ Test commit exists but commitizen still failed - this indicates a problem"
-              cat /tmp/release_output.log
-              exit 1
-            else
-              echo "✅ No test commit found, this failure is expected"
-              exit 0
-            fi
           else
             echo "❌ Release script failed with exit code $release_exit_code"
             cat /tmp/release_output.log
