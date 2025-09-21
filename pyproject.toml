@@ -1,6 +1,6 @@
 [project]
 name = "prompts-mcp"
-version = "1.6.0rc2"
+version = "1.5.2rc3"
 description = "Model Context Protocol (MCP) server of Markdown based prompts."
 authors = [{ name = "Anssi Syrjäsalo", email = "ai@alkue.com" }]
 requires-python = ">=3.10"
