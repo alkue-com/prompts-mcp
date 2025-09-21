@@ -110,6 +110,17 @@ def clean() -> None:
     print("Clean completed!")
 
 
+def _check_uv_available() -> None:
+    """Check if uv is available and exit with error if not."""
+    if not shutil.which("uv"):
+        print("Error: 'uv' command not found. Please install uv first.")
+        print(
+            "Visit https://docs.astral.sh/uv/getting-started/installation/ "
+            "for installation instructions."
+        )
+        sys.exit(1)
+
+
 def _print_usage() -> None:
     """Print usage information and exit."""
     print("Usage: ./dev.py <command> [args...]")
@@ -189,6 +200,9 @@ def _run_single_command(command: str) -> None:
 
 def main() -> None:
     """Main entry point for the development script."""
+    # Check if uv is available before doing anything else
+    _check_uv_available()
+
     if len(sys.argv) < 2:
         _print_usage()
 

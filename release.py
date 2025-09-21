@@ -163,6 +163,17 @@ def build_uv_publish_command(repository: str = "pypi") -> list[str]:
     return ["uv", "publish"] + opts
 
 
+def _check_uv_available() -> None:
+    """Check if uv is available and exit with error if not."""
+    if not shutil.which("uv"):
+        print("Error: 'uv' command not found. Please install uv first.")
+        print(
+            "Visit https://docs.astral.sh/uv/getting-started/installation/ "
+            "for installation instructions."
+        )
+        sys.exit(1)
+
+
 def parse_arguments() -> tuple[str | None, str | None]:
     """Parse command line arguments.
 
@@ -282,6 +293,9 @@ def run_release(publish_index: str | None) -> None:
 
 def main() -> None:
     """Main entry point for the release script."""
+    # Check if uv is available before doing anything else
+    _check_uv_available()
+
     prerelease_type, publish_index = parse_arguments()
     validate_release_environment()
     if prerelease_type:
