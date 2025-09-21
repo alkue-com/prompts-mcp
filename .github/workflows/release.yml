@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-tags: true
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -66,10 +67,16 @@ jobs:
           echo "Initial version: $initial_version"
 
           # Debug: Show what commitizen will see
+          echo "All tags:"
+          git tag -l | sort -V
           echo "Commits since last tag:"
           git log --oneline $(git describe --tags --abbrev=0)..HEAD 2>/dev/null || git log --oneline -5
           echo "Current HEAD commit:"
           git log --oneline -1
+
+          # Temporarily disable incremental changelog for testing
+          echo "Temporarily disabling incremental changelog for testing..."
+          sed -i 's/changelog_incremental = true/changelog_incremental = false/' pyproject.toml
 
           # Run the RC creation and capture output
           echo "Running: uv run release.py rc"
@@ -186,6 +193,10 @@ jobs:
 
       - name: Cleanup test files
         run: |
+          # Restore original commitizen configuration
+          echo "Restoring original commitizen configuration..."
+          sed -i 's/changelog_incremental = false/changelog_incremental = true/' pyproject.toml
+
           # Remove the test file created during the workflow
           if [ -f "test_release.md" ]; then
             rm test_release.md
