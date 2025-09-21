@@ -31,6 +31,7 @@ Documentation = "https://github.com/alkue-com/prompts-mcp/blob/main/README.md"
 
 [tool.codespell]
 skip = "*.json"
+count = true
 
 [tool.ruff]
 line-length = 80
@@ -63,16 +64,13 @@ select = [
 max-complexity = 5
 
 [tool.mypy]
-python_version = "3.10"
 check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
 no_implicit_optional = true
 strict = true
-strict_optional = true
 strict_equality = true
-warn_no_return = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unused_configs = true
