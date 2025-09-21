@@ -1,4 +1,4 @@
-name: Check spelling
+name: Check security
 
 on:
   push:
@@ -10,11 +10,14 @@ permissions:
   contents: read
 
 jobs:
-  codespell:
+  checkov:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Run Codespell
-        uses: codespell-project/actions-codespell@v2
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          quiet: true

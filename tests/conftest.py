@@ -17,7 +17,7 @@ def temp_prompts_dir() -> Generator[Path, None, None]:
         prompts_dir = Path(temp_dir) / "prompts"
         prompts_dir.mkdir()
 
-        # Create sample prompt files
+        # Create sample prompt filesss
         sample_prompt_1 = prompts_dir / "test_prompt_1.md"
         sample_prompt_1.write_text("""# Test Prompt 1
 
