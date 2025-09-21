@@ -32,10 +32,15 @@ jobs:
         run: |
           uv python update-shell
 
+      - name: Verify Python version
+        shell: bash
+        run: |
+          python --version
+
       - name: Run dev.py
         shell: bash
         run: |
-          python dev.py all
+          ./dev.py all
 
       - name: Start server
         shell: bash
