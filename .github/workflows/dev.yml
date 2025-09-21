@@ -30,6 +30,7 @@ jobs:
 
       - name: Install .python-version
         run: |
+          which uv
           uv python install
 
       - name: Start server (macOS & Linux)
@@ -60,9 +61,11 @@ jobs:
       - name: Run dev.py (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
+          which python
           ./dev.py all
 
       - name: Run dev.py (Windows)
         if: runner.os == 'Windows'
         run: |
+          which python
           uv run dev.py all
