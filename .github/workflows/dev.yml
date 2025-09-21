@@ -31,7 +31,11 @@ jobs:
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
-          export PROMPTS_DIR="$GITHUB_WORKSPACE/tests/test_prompts"
+          echo "Current directory: $(pwd)"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          export PROMPTS_DIR="$(pwd)/tests/test_prompts"
+          echo "PROMPTS_DIR: $PROMPTS_DIR"
+          ls -la tests/test_prompts || echo "Directory not found"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
           sleep 3
@@ -43,7 +47,12 @@ jobs:
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
-          set PROMPTS_DIR=%GITHUB_WORKSPACE%\tests\test_prompts
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
+          $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
+          Write-Host "PROMPTS_DIR: $PROMPTS_DIR"
+          Get-ChildItem tests\test_prompts -ErrorAction SilentlyContinue | Write-Host
+          $env:PROMPTS_DIR = $PROMPTS_DIR
           Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
           Start-Sleep -Seconds 3
           Stop-Job *
