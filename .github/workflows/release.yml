@@ -1,0 +1,142 @@
+name: Create release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  releasepy:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install .python-version
+        run: |
+          uv python install
+
+      - name: Install dependencies
+        run: |
+          uv sync --group commit
+
+      - name: Create rc
+        run: |
+          # Capture initial state
+          initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
+          echo "Initial version: $initial_version"
+
+          # Run the RC creation
+          echo "Running: uv run release.py rc"
+          uv run release.py rc
+
+          # Verify expected outcomes
+          echo "Verifying RC creation results..."
+
+          # Check if version was bumped
+          new_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
+          echo "New version: $new_version"
+
+          if [[ "$new_version" == *"rc"* ]]; then
+            echo "✅ Version contains 'rc' suffix"
+          else
+            echo "❌ Version does not contain 'rc' suffix"
+            exit 1
+          fi
+
+          # Check if dist directory was created
+          if [ -d "dist" ]; then
+            echo "✅ dist/ directory was created"
+            ls -la dist/
+          else
+            echo "❌ dist/ directory was not created"
+            exit 1
+          fi
+
+          # Check if package files exist
+          if ls dist/*.whl 1> /dev/null 2>&1; then
+            echo "✅ Wheel file was created"
+          else
+            echo "❌ Wheel file was not created"
+            exit 1
+          fi
+
+          if ls dist/*.tar.gz 1> /dev/null 2>&1; then
+            echo "✅ Source distribution was created"
+          else
+            echo "❌ Source distribution was not created"
+            exit 1
+          fi
+
+          # Check if changelog was updated
+          if [ -f "CHANGELOG.md" ]; then
+            echo "✅ CHANGELOG.md exists"
+
+            # Check if the new version appears in changelog
+            if grep -q "$new_version" CHANGELOG.md; then
+              echo "✅ CHANGELOG.md contains new version: $new_version"
+            else
+              echo "❌ CHANGELOG.md does not contain new version: $new_version"
+              echo "Changelog content:"
+              head -20 CHANGELOG.md
+              exit 1
+            fi
+
+            # Check if changelog has recent entries
+            if grep -q "## \[$new_version\]" CHANGELOG.md; then
+              echo "✅ CHANGELOG.md has proper version header for $new_version"
+            else
+              echo "❌ CHANGELOG.md missing proper version header for $new_version"
+              exit 1
+            fi
+          else
+            echo "❌ CHANGELOG.md file does not exist"
+            exit 1
+          fi
+
+          # Check if git tag was created
+          echo "Checking git tags..."
+
+          # List all tags to see what was created
+          echo "All git tags:"
+          git tag --sort=-version:refname | head -10
+
+          # Check if the new version tag exists
+          if git tag -l | grep -q "^$new_version$"; then
+            echo "✅ Git tag '$new_version' was created"
+
+            # Verify the tag points to the current commit
+            tag_commit=$(git rev-list -n 1 "$new_version")
+            current_commit=$(git rev-parse HEAD)
+
+            if [ "$tag_commit" = "$current_commit" ]; then
+              echo "✅ Git tag '$new_version' points to current commit"
+            else
+              echo "❌ Git tag '$new_version' does not point to current commit"
+              echo "Tag commit: $tag_commit"
+              echo "Current commit: $current_commit"
+              exit 1
+            fi
+
+            # Show tag details
+            echo "Tag details:"
+            git show --no-patch --format=fuller "$new_version"
+          else
+            echo "❌ Git tag '$new_version' was not created"
+            echo "Available tags:"
+            git tag --sort=-version:refname
+            exit 1
+          fi
+
+          echo "✅ Create rc functionality test passed!"
