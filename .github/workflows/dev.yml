@@ -1,4 +1,4 @@
-name: Development
+name: Setup development
 
 on:
   push:
@@ -31,7 +31,8 @@ jobs:
 
       - name: Run dev.py
         run: |
-          uv run dev.py all
+          uv run python --version
+          ./dev.py all
 
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
