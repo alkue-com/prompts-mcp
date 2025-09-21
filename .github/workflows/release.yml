@@ -34,7 +34,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Create conventional commit
+        run: |
+          echo "" > .dummy
+          git add .dummy
+          git commit -m "fix(dummy): Add empty file"
+
       - name: Create release
         run: |
-          set -x
           uv run release.py
