@@ -43,14 +43,16 @@ jobs:
         run: |
           # Ensure working tree is clean before starting
           echo "Checking git status..."
-          git status --porcelain
+          git status
 
-          # Clean up any uncommitted changes from previous runs
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Cleaning up uncommitted changes..."
-            git reset --hard HEAD
-            git clean -fd
-          fi
+          # Always clean up to ensure fresh state
+          echo "Cleaning up any uncommitted changes..."
+          git reset --hard HEAD
+          git clean -fd
+
+          # Verify clean state
+          echo "Verifying clean state..."
+          git status
 
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
