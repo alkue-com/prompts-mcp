@@ -1,0 +1,51 @@
+name: Development
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  development:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install .python-version
+        run: |
+          uv python install
+
+      - name: Run dev.py
+        run: |
+          ./dev.py all
+
+      - name: Start server
+        run: |
+          # Start server in background
+          uv run prompts-mcp &
+          SERVER_PID=$!
+
+          # Wait a moment for server to start
+          sleep 5
+
+          # Check if server is still running (successful start)
+          if kill -0 $SERVER_PID 2>/dev/null; then
+            echo "Server started successfully"
+            # Kill the server
+            kill $SERVER_PID
+            echo "Server stopped"
+          else
+            echo "Server failed to start"
+            exit 1
+          fi
+        env:
+          PROMPTS_DIR: "tests/test_prompts"
