@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  codespell:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
