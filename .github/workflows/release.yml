@@ -45,3 +45,127 @@ jobs:
       - name: Create release
         run: |
           uv run release.py
+
+      - name: Extract version number
+        id: version
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Verify version was updated in files
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Verifying version $VERSION was updated in all files..."
+
+          # Check pyproject.toml
+          PYPROJECT_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "$PYPROJECT_VERSION" != "$VERSION" ]; then
+            echo "Error: Version mismatch in pyproject.toml"
+            echo "Expected: $VERSION"
+            echo "Found: $PYPROJECT_VERSION"
+            exit 1
+          fi
+          echo "✓ pyproject.toml version: $PYPROJECT_VERSION"
+
+          # Check __init__.py
+          INIT_VERSION=$(python -c "import prompts_mcp; print(prompts_mcp.__version__)")
+          if [ "$INIT_VERSION" != "$VERSION" ]; then
+            echo "Error: Version mismatch in prompts_mcp/__init__.py"
+            echo "Expected: $VERSION"
+            echo "Found: $INIT_VERSION"
+            exit 1
+          fi
+          echo "✓ prompts_mcp/__init__.py version: $INIT_VERSION"
+
+          echo "All version files verified successfully!"
+
+      - name: Verify changelog was updated
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Verifying changelog was updated for version $VERSION..."
+
+          # Check if the version appears in the changelog
+          if ! grep -q "^## $VERSION" CHANGELOG.md; then
+            echo "Error: Version $VERSION not found in CHANGELOG.md"
+            echo "Looking for pattern: '## $VERSION'"
+            echo "Current changelog entries:"
+            grep "^## " CHANGELOG.md | head -5
+            exit 1
+          fi
+
+          # Check if the changelog entry has a date
+          if ! grep -A1 "^## $VERSION" CHANGELOG.md | grep -q "([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])"; then
+            echo "Error: Version $VERSION entry in CHANGELOG.md is missing date"
+            echo "Expected format: '## $VERSION (YYYY-MM-DD)'"
+            echo "Found entry:"
+            grep -A1 "^## $VERSION" CHANGELOG.md
+            exit 1
+          fi
+
+          echo "✓ Changelog updated for version $VERSION with date"
+
+      - name: Verify distribution files exist
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Checking for distribution files with version: $VERSION"
+
+          # Check for .tar.gz file
+          TAR_FILE="dist/prompts_mcp-${VERSION}.tar.gz"
+          if [ ! -f "$TAR_FILE" ]; then
+            echo "Error: Expected file $TAR_FILE not found"
+            ls -la dist/
+            exit 1
+          fi
+          echo "✓ Found $TAR_FILE"
+
+          # Check for .whl file
+          WHL_FILE="dist/prompts_mcp-${VERSION}-py3-none-any.whl"
+          if [ ! -f "$WHL_FILE" ]; then
+            echo "Error: Expected file $WHL_FILE not found"
+            ls -la dist/
+            exit 1
+          fi
+          echo "✓ Found $WHL_FILE"
+
+          echo "All distribution files verified successfully!"
+
+      - name: Verify git tag was created
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Verifying git tag v$VERSION was created..."
+
+          # Check if the tag exists
+          if ! git tag -l "v$VERSION" | grep -q "v$VERSION"; then
+            echo "Error: Git tag v$VERSION not found"
+            echo "Available tags:"
+            git tag -l | tail -10
+            exit 1
+          fi
+
+          # Verify the tag points to the current commit
+          TAG_COMMIT=$(git rev-list -n 1 "v$VERSION")
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+
+          if [ "$TAG_COMMIT" != "$CURRENT_COMMIT" ]; then
+            echo "Error: Git tag v$VERSION does not point to current commit"
+            echo "Tag commit: $TAG_COMMIT"
+            echo "Current commit: $CURRENT_COMMIT"
+            exit 1
+          fi
+
+          echo "✓ Git tag v$VERSION created and points to current commit"
+          echo "Tag commit: $TAG_COMMIT"
+
+          # Verify the commit message format
+          COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+          EXPECTED_MESSAGE="chore: Release $VERSION"
+
+          if [ "$COMMIT_MESSAGE" != "$EXPECTED_MESSAGE" ]; then
+            echo "Error: Commit message does not match expected format"
+            echo "Expected: $EXPECTED_MESSAGE"
+            echo "Found: $COMMIT_MESSAGE"
+            exit 1
+          fi
+
+          echo "✓ Commit message format verified: $COMMIT_MESSAGE"
