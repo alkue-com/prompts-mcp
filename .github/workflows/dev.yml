@@ -31,7 +31,7 @@ jobs:
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
-          export PROMPTS_DIR="tests/test_prompts"
+          export PROMPTS_DIR="$GITHUB_WORKSPACE/tests/test_prompts"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
           sleep 3
@@ -43,7 +43,7 @@ jobs:
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
-          set PROMPTS_DIR=tests\test_prompts
+          set PROMPTS_DIR=%GITHUB_WORKSPACE%\tests\test_prompts
           Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
           Start-Sleep -Seconds 3
           Stop-Job *
