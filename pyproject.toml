@@ -24,7 +24,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-mock",
-    "pytest-modern",
+    "pytest-sugar",
     "ruff",
 ]
 git = ["commitizen", "pre-commit"]
