@@ -25,6 +25,10 @@ jobs:
         run: |
           uv python install
 
-      - name: Run release.py
+      - name: Sync dependencies
+        run: |
+          uv sync --group commit
+
+      - name: Create release
         run:
           uv run release.py
