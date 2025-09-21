@@ -649,10 +649,6 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-commit = [
-    { name = "commitizen" },
-    { name = "pre-commit" },
-]
 dev = [
     { name = "mypy" },
     { name = "pytest" },
@@ -660,16 +656,16 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "ruff" },
+]
+git = [
+    { name = "commitizen" },
+    { name = "pre-commit" },
 ]
 
 [package.metadata]
 requires-dist = [{ name = "mcp", specifier = ">=1.14.1" }]
 
 [package.metadata.requires-dev]
-commit = [
-    { name = "commitizen" },
-    { name = "pre-commit" },
-]
 dev = [
     { name = "mypy" },
     { name = "pytest" },
@@ -677,6 +673,10 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "ruff" },
+]
+git = [
+    { name = "commitizen" },
+    { name = "pre-commit" },
 ]
 
 [[package]]
