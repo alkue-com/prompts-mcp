@@ -29,6 +29,12 @@ jobs:
         run: |
           uv sync --group commit
 
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Create release
-        run:
+        run: |
+          set -x
           uv run release.py
