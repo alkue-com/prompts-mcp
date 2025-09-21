@@ -33,4 +33,4 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           quiet: true
-          output_format: cli,sarif
+          output_format: cli
