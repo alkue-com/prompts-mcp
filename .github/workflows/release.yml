@@ -26,7 +26,7 @@ jobs:
 
       - name: Sync dependencies
         run: |
-          uv sync --group commit
+          uv sync --all-groups
 
       - name: Configure git
         run: |

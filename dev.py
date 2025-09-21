@@ -146,7 +146,7 @@ def _get_commands() -> dict[str, tuple[str | None, str]]:
     """Get the available commands and their configurations."""
     return {
         "sync": (
-            "uv sync --group commit && "
+            "uv sync --all-groups && "
             "uv run pre-commit install --hook-type pre-commit "
             "--hook-type commit-msg",
             "Syncing dependencies",
