@@ -49,6 +49,22 @@ jobs:
           This commit is created by the GitHub Actions workflow to test the release process.
           It should trigger a patch version bump when running commitizen."
 
+      - name: Ensure clean working tree
+        run: |
+          # Check git status to ensure working tree is clean
+          echo "Checking git status before release..."
+          git status
+          git status --porcelain
+
+          # If there are any uncommitted changes, commit them
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Working tree has uncommitted changes, committing them..."
+            git add .
+            git commit -m "chore: commit remaining changes before release"
+          else
+            echo "Working tree is clean"
+          fi
+
       - name: Create rc
         run: |
           # Capture initial state
@@ -60,11 +76,14 @@ jobs:
           uv run python release.py rc > /tmp/release_output.log 2>&1
           release_exit_code=$?
 
+          echo "Release script exit code: $release_exit_code"
+          echo "Release script output:"
+          cat /tmp/release_output.log
+
           if [ $release_exit_code -eq 0 ]; then
             echo "✅ Release script completed successfully"
           else
             echo "❌ Release script failed with exit code $release_exit_code"
-            cat /tmp/release_output.log
             exit 1
           fi
 
