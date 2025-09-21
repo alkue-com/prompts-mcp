@@ -35,12 +35,12 @@ jobs:
       - name: Verify Python version
         shell: bash
         run: |
-          python --version
+          uv run python --version
 
       - name: Run dev.py
         shell: bash
         run: |
-          ./dev.py all
+          uv run dev.py all
 
       - name: Start server
         shell: bash
