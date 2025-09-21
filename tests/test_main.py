@@ -208,6 +208,30 @@ class TestRegisterPromptEdgeCases:
         ):
             server.register_prompt(prompt_data)
 
+    @patch("prompts_mcp.main.PromptsMCPServer._validate_app_initialization")
+    def test_register_prompt_app_none_after_validation(
+        self, mock_validate: Any
+    ) -> None:
+        """Test register_prompt when app is None after validation passes."""
+        # Create test server instance with None app
+        server = create_test_server(app=None)
+
+        # Mock the validation to pass (not raise an error)
+        mock_validate.return_value = None
+
+        prompt_data = {
+            "name": "test_prompt",
+            "content": "Test content",
+            "description": "Test description",
+        }
+
+        # This should now reach the app validation check and raise
+        # RuntimeError there
+        with pytest.raises(
+            RuntimeError, match="FastMCP app is not initialized"
+        ):
+            server.register_prompt(prompt_data)
+
 
 @pytest.mark.unit
 class TestMainEdgeCases:

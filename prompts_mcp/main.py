@@ -129,7 +129,8 @@ class PromptsMCPServer:
         prompt_handler = self._create_prompt_handler(prompt_content)
 
         # Register the prompt with FastMCP
-        assert self.app is not None  # Validated in _validate_app_initialization
+        if self.app is None:
+            raise RuntimeError("FastMCP app is not initialized")
         self.app.prompt(name=prompt_name, description=prompt_description)(
             prompt_handler
         )
