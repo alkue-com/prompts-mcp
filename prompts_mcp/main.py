@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 MCP Server for serving prompts from a local directory using FastMCP.
 

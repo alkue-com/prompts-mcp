@@ -13,20 +13,39 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      - id: check-merge-conflict
-      - id: check-added-large-files
-      - id: check-case-conflict
+      # check for basic syntax errors in python and data files
       - id: check-ast
-      - id: debug-statements
-      - id: check-docstring-first
-      - id: mixed-line-ending
-      - id: trailing-whitespace
-      - id: check-json
       - id: check-toml
       - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      # check for bad files and folders
       - id: check-symlinks
       - id: destroyed-symlinks
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-shebang-scripts-are-executable
       - id: check-executables-have-shebangs
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: fix-byte-order-marker
+      - id: end-of-file-fixer
+      # best practices enforcement
+      - id: detect-private-key
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: forbid-submodules
+      - id: check-added-large-files
+        args: ["--maxkb=600"]
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
 
   - repo: https://github.com/bridgecrewio/checkov.git
     rev: 3.2.471
@@ -44,13 +63,14 @@ repos:
     rev: v0.13.1
     hooks:
       - id: ruff-check
+        args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.6
     hooks:
-    - id: bandit
-      args: ["--severity-level=medium", "--quiet"]
+      - id: bandit
+        args: ["--severity-level=medium", "--quiet"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.18.2

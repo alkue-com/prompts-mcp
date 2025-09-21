@@ -29,22 +29,8 @@ Homepage = "https://pypi.org/project/prompts-mcp"
 Repository = "https://github.com/alkue-com/prompts-mcp"
 Documentation = "https://github.com/alkue-com/prompts-mcp/blob/main/README.md"
 
-[tool.pytest.ini_options]
-testpaths = "tests"
-addopts = [
-    "-v",
-    "--strict-markers",
-    "--cov=prompts_mcp",
-    "--cov-report=term-missing",
-    #    "--cov-report=xml"
-    #    "--cov-report=html"
-]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow running tests",
-]
-asyncio_mode = "auto"
+[tool.codespell]
+skip = "*.json"
 
 [tool.ruff]
 line-length = 80
@@ -92,6 +78,23 @@ warn_return_any = true
 warn_unused_configs = true
 warn_unused_ignores = true
 warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--cov=prompts_mcp",
+    "--cov-report=term-missing",
+    #    "--cov-report=xml"
+    #    "--cov-report=html"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+asyncio_mode = "auto"
 
 [tool.commitizen]
 bump_message = "chore: Release $new_version"
