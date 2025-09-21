@@ -33,7 +33,7 @@ jobs:
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
           sleep 3
-          kill $SERVER_PID
+          kill $SERVER_PID 2>/dev/null || true
           grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
           grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
           grep -q "INFO:prompts-mcp:Loaded.*prompts from" server.log
