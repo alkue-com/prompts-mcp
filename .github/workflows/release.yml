@@ -66,23 +66,6 @@ jobs:
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
 
-          # Debug: Show what commitizen will see
-          echo "All tags:"
-          git tag -l | sort -V
-          echo "Commits since last tag:"
-          git log --oneline $(git describe --tags --abbrev=0)..HEAD 2>/dev/null || git log --oneline -5
-          echo "Current HEAD commit:"
-          git log --oneline -1
-
-          # Temporarily disable incremental changelog for testing
-          echo "Temporarily disabling incremental changelog for testing..."
-          sed -i 's/changelog_incremental = true/changelog_incremental = false/' pyproject.toml
-
-          # Run the RC creation and capture output
-          echo "Running: uv run release.py rc"
-          uv run release.py rc 2>&1 | tee /tmp/release_output.log
-          release_exit_code=${PIPESTATUS[0]}
-
           if [ $release_exit_code -eq 0 ]; then
             echo "✅ Release script completed successfully"
           else
@@ -190,7 +173,6 @@ jobs:
           fi
 
           echo "✅ Create rc functionality test passed!"
-
       - name: Cleanup test files
         run: |
           # Restore original commitizen configuration
@@ -202,3 +184,4 @@ jobs:
             rm test_release.md
             echo "✅ Test file cleaned up"
           fi
+
