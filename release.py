@@ -87,8 +87,15 @@ def check_working_tree_clean() -> None:
         print("Error: Failed to check git status")
         sys.exit(1)
 
-    if result.stdout.strip():
+    # Check for actual changes (non-empty lines with content)
+    changes = [
+        line for line in result.stdout.strip().split("\n") if line.strip()
+    ]
+    if changes:
         print("Error: Working tree has changes: Stash, commit or reset first")
+        print("Changes detected:")
+        for change in changes:
+            print(f"  {change}")
         sys.exit(1)
 
 
