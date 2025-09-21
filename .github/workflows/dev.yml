@@ -38,7 +38,7 @@ jobs:
           export PROMPTS_DIR="$(pwd)/tests/test_prompts"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
-          sleep 3
+          sleep 5
           kill $SERVER_PID 2>/dev/null || true
           grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
           grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
@@ -50,7 +50,7 @@ jobs:
           $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
           $env:PROMPTS_DIR = $PROMPTS_DIR
           Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
-          Start-Sleep -Seconds 3
+          Start-Sleep -Seconds 5
           Stop-Job *
           Remove-Job *
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet
