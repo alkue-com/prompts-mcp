@@ -18,7 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
           fetch-tags: true
 
       - name: Install uv
@@ -41,19 +40,6 @@ jobs:
 
       - name: Create rc
         run: |
-          # Ensure working tree is clean before starting
-          echo "Checking git status..."
-          git status
-
-          # Always clean up to ensure fresh state
-          echo "Cleaning up any uncommitted changes..."
-          git reset --hard HEAD
-          git clean -fd
-
-          # Verify clean state
-          echo "Verifying clean state..."
-          git status
-
           # Capture initial state
           initial_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "Initial version: $initial_version"
