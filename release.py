@@ -191,7 +191,15 @@ def main() -> None:
         print(f"Creating pre-release ({prerelease_type})")
 
         # Run bump command
-        bump_cmd = ["uv", "run", "cz", "bump", "--prerelease", prerelease_type]
+        bump_cmd = [
+            "uv",
+            "run",
+            "cz",
+            "bump",
+            "--prerelease",
+            prerelease_type,
+            "--yes",
+        ]
         run_command(" ".join(bump_cmd), "Creating pre-release")
 
         # Run build command
@@ -207,7 +215,7 @@ def main() -> None:
             sys.exit(result.returncode)
     else:
         # Run bump command
-        bump_cmd = ["uv", "run", "cz", "bump"]
+        bump_cmd = ["uv", "run", "cz", "bump", "--yes"]
         run_command(" ".join(bump_cmd), "Creating release")
 
         # Run build command
