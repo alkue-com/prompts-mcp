@@ -19,7 +19,7 @@ dependencies = ["mcp>=1.14.1"]
 
 [dependency-groups]
 dev = ["mypy", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock", "ruff"]
-commit = ["commitizen", "pre-commit"]
+git = ["commitizen", "pre-commit"]
 
 [project.scripts]
 prompts-mcp = "prompts_mcp.main:main"
