@@ -31,7 +31,6 @@ Documentation = "https://github.com/alkue-com/prompts-mcp/blob/main/README.md"
 
 [tool.codespell]
 skip = "*.json"
-count = true
 
 [tool.ruff]
 line-length = 80
