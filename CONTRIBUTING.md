@@ -52,9 +52,9 @@ Use it in [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp
 
 ## Release
 
-Use `release.py` to build and publish the packages in `dist/` in to PyPIs.
+Run `release.py` to bump version, do changelog, build packages and publish them.
 
-**Note:** The release script looks for PyPI credentials in user's `.pypirc`.
+**Note:** The script looks for PyPI credentials in user's `.pypirc`.
 
 Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
 
