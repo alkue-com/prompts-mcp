@@ -26,20 +26,15 @@ jobs:
       - name: Install .python-version
         run: |
           uv python install
-
-      - name: Update shell environment
-        run: |
           uv python update-shell
-
-      - name: Verify Python version
-        run: |
           uv run python --version
 
       - name: Run dev.py
         run: |
           uv run dev.py all
 
-      - name: Start server
+      - name: Start server (macOS & Linux)
+        if: runner.os != 'Windows'
         run: |
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
@@ -48,5 +43,18 @@ jobs:
           grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
           grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
           grep -q "INFO:prompts-mcp:Loaded.*prompts from" server.log
+        env:
+          PROMPTS_DIR: "tests/test_prompts"
+
+      - name: Start server (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
+          Start-Sleep -Seconds 3
+          Stop-Job *
+          Remove-Job *
+          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet
+          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet
+          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet
         env:
           PROMPTS_DIR: "tests/test_prompts"
