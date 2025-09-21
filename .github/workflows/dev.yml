@@ -28,10 +28,6 @@ jobs:
           uv python install
           uv python update-shell
 
-      - name: Run dev.py
-        run: |
-          python3 dev.py all
-
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
@@ -55,3 +51,7 @@ jobs:
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet
+
+      - name: Run dev.py
+        run: |
+          uv run dev.py all
