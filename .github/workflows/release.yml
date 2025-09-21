@@ -46,17 +46,17 @@ jobs:
 
           # Run the RC creation and capture output
           echo "Running: uv run release.py rc"
-          if uv run release.py rc 2>&1 | tee release_output.log; then
+          if uv run release.py rc 2>&1 | tee /tmp/release_output.log; then
             echo "✅ Release script completed successfully"
           else
             echo "Release script failed, checking if publishing was attempted..."
 
             # Check if the expected publishing message appears
-            if grep -q "Publishing 2 files to https://upload.pypi.org/legacy/" release_output.log; then
+            if grep -q "Publishing 2 files to https://upload.pypi.org/legacy/" /tmp/release_output.log; then
               echo "✅ Publishing was attempted as expected (credentials issue is expected)"
             else
               echo "❌ Publishing was not attempted - this indicates a problem"
-              cat release_output.log
+              cat /tmp/release_output.log
               exit 1
             fi
           fi
