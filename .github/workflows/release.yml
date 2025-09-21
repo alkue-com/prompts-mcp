@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "# Dummy file for release" > .dummy
           git add .dummy
-          git commit -m "fix(dummy): add dummy file for testing release script"
+          git commit -m "fix(dummy): add release test commit for verification"
 
       - name: Create release
         run: |
@@ -192,3 +192,114 @@ jobs:
           fi
 
           echo "✓ Release is idempotent - version unchanged on second run"
+
+      - name: Test RC creation and verify RC numbering
+        run: |
+          echo "Testing RC creation with uv run release.py rc..."
+
+          # Store current version before RC creation
+          ORIGINAL_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "Original version before RC: $ORIGINAL_VERSION"
+
+          # Create a dummy commit for RC testing
+          echo "# RC test commit" > .rc_test
+          git add .rc_test
+          git commit -m "fix(dummy): add RC test commit for verification"
+
+          # Run RC creation
+          echo "Running: uv run release.py rc"
+          uv run release.py rc
+
+          # Extract the new RC version
+          RC_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "RC version created: $RC_VERSION"
+
+          # Verify RC version format
+          if [[ ! "$RC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
+            echo "Error: RC version format is incorrect"
+            echo "Expected format: X.Y.ZrcN (e.g., 1.6.1rc1)"
+            echo "Found: $RC_VERSION"
+            exit 1
+          fi
+          echo "✓ RC version format is correct: $RC_VERSION"
+
+          # Verify RC starts from rc1, not rc0
+          RC_NUMBER=$(echo "$RC_VERSION" | sed 's/.*rc\([0-9]*\)$/\1/')
+          if [ "$RC_NUMBER" != "1" ]; then
+            echo "Error: RC version should start from rc1, not rc$RC_NUMBER"
+            echo "Expected: ${RC_VERSION%rc*}rc1"
+            echo "Found: $RC_VERSION"
+            exit 1
+          fi
+          echo "✓ RC version correctly starts from rc1: $RC_VERSION"
+
+          # Verify RC version is higher than original
+          if [ "$RC_VERSION" = "$ORIGINAL_VERSION" ]; then
+            echo "Error: RC version should be different from original version"
+            echo "Original: $ORIGINAL_VERSION"
+            echo "RC: $RC_VERSION"
+            exit 1
+          fi
+          echo "✓ RC version is different from original: $ORIGINAL_VERSION -> $RC_VERSION"
+
+          # Verify RC version appears in changelog
+          if ! grep -q "^## $RC_VERSION" CHANGELOG.md; then
+            echo "Error: RC version $RC_VERSION not found in CHANGELOG.md"
+            echo "Looking for pattern: '## $RC_VERSION'"
+            echo "Current changelog entries:"
+            grep "^## " CHANGELOG.md | head -5
+            exit 1
+          fi
+          echo "✓ RC version $RC_VERSION found in CHANGELOG.md"
+
+          # Verify RC distribution files exist
+          RC_TAR_FILE="dist/prompts_mcp-${RC_VERSION}.tar.gz"
+          RC_WHL_FILE="dist/prompts_mcp-${RC_VERSION}-py3-none-any.whl"
+
+          if [ ! -f "$RC_TAR_FILE" ]; then
+            echo "Error: Expected RC file $RC_TAR_FILE not found"
+            ls -la dist/
+            exit 1
+          fi
+          echo "✓ Found RC tar file: $RC_TAR_FILE"
+
+          if [ ! -f "$RC_WHL_FILE" ]; then
+            echo "Error: Expected RC file $RC_WHL_FILE not found"
+            ls -la dist/
+            exit 1
+          fi
+          echo "✓ Found RC wheel file: $RC_WHL_FILE"
+
+          # Verify RC git tag was created
+          if ! git tag -l "$RC_VERSION" | grep -q "^$RC_VERSION$"; then
+            echo "Error: RC git tag $RC_VERSION not found"
+            echo "Available tags:"
+            git tag -l | tail -10
+            exit 1
+          fi
+          echo "✓ RC git tag $RC_VERSION created"
+
+          # Test creating a second RC to verify incrementing
+          echo "Testing second RC creation..."
+          echo "# Second RC test commit" > .rc_test2
+          git add .rc_test2
+          git commit -m "fix(dummy): add second RC test commit for verification"
+
+          # Run second RC creation
+          uv run release.py rc
+
+          # Extract the second RC version
+          RC_VERSION_2=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "Second RC version created: $RC_VERSION_2"
+
+          # Verify second RC is rc2
+          RC_NUMBER_2=$(echo "$RC_VERSION_2" | sed 's/.*rc\([0-9]*\)$/\1/')
+          if [ "$RC_NUMBER_2" != "2" ]; then
+            echo "Error: Second RC should be rc2, not rc$RC_NUMBER_2"
+            echo "Expected: ${RC_VERSION_2%rc*}rc2"
+            echo "Found: $RC_VERSION_2"
+            exit 1
+          fi
+          echo "✓ Second RC correctly increments to rc2: $RC_VERSION_2"
+
+          echo "✓ All RC creation and numbering tests passed!"
