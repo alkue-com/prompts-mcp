@@ -57,20 +57,10 @@ jobs:
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet
           Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet
 
-      - name: Run dev.py (macOS & Linux)
-        if: runner.os != 'Windows'
-        run: |
-          uv python update-shell
-          which python
-          ./dev.py all
-
-      - name: Run dev.py (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          uv python update-shell
-          which python
+      - name: Run dev.py
+        run:
           uv run dev.py all
 
       - name: Run pre-commit hooks
         run: |
-          pre-commit run --all-files --verbose
+          uv run pre-commit run --all-files --verbose

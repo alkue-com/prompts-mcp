@@ -5,29 +5,23 @@ if not already present.
 
 ## Development
 
-### macOS & Linux distros
-
-Set the `PROMPTS_DIR` environment variable:
+Set the `PROMPTS_DIR` environment variable (macOS & Linux distros):
 
     export PROMPTS_DIR="/path/to/your/prompts"
+
+On Windows:
+
+    set PROMPTS_DIR=C:\path\to\your\prompts
 
 Run the server:
 
     uv run prompts-mcp
 
-Use `./dev.py` for common tasks. Run without arguments for list of all tasks.
+Use `dev.py` for development tasks. Run without arguments for list of all tasks.
 
 To run all the tasks (sync, format, lint, check, test) at once:
 
-    ./dev.py all
-
-### Windows
-
-Similarly:
-
-    set PROMPTS_DIR=C:\path\to\your\prompts
-    uv run prompts-mcp
-    python dev.py all
+    uv run dev.py all
 
 ### Test drive
 
@@ -58,14 +52,14 @@ Use it in [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp
 
 ## Release
 
-Use `release.py` to build and publish the source dist and the wheel.
+Use `release.py` to build and publish the packages in `dist/` in to PyPIs.
 
 **Note:** The release script looks for PyPI credentials in user's `.pypirc`.
 
 Build and publish to [TestPyPI](https://test.pypi.org/project/prompts-mcp/):
 
-    ./release.py rc
+    uv run release.py rc
 
 Build and publish to [PyPI](https://pypi.org/project/prompts-mcp/):
 
-    ./release.py
+    uv run release.py
