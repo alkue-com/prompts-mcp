@@ -133,28 +133,28 @@ jobs:
       - name: Verify git tag was created
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          echo "Verifying git tag v$VERSION was created..."
+          echo "Verifying git tag $VERSION was created..."
 
-          # Check if the tag exists
-          if ! git tag -l "v$VERSION" | grep -q "v$VERSION"; then
-            echo "Error: Git tag v$VERSION not found"
+          # Check if the tag exists (without v prefix)
+          if ! git tag -l "$VERSION" | grep -q "^$VERSION$"; then
+            echo "Error: Git tag $VERSION not found"
             echo "Available tags:"
             git tag -l | tail -10
             exit 1
           fi
 
           # Verify the tag points to the current commit
-          TAG_COMMIT=$(git rev-list -n 1 "v$VERSION")
+          TAG_COMMIT=$(git rev-list -n 1 "$VERSION")
           CURRENT_COMMIT=$(git rev-parse HEAD)
 
           if [ "$TAG_COMMIT" != "$CURRENT_COMMIT" ]; then
-            echo "Error: Git tag v$VERSION does not point to current commit"
+            echo "Error: Git tag $VERSION does not point to current commit"
             echo "Tag commit: $TAG_COMMIT"
             echo "Current commit: $CURRENT_COMMIT"
             exit 1
           fi
 
-          echo "✓ Git tag v$VERSION created and points to current commit"
+          echo "✓ Git tag $VERSION created and points to current commit"
           echo "Tag commit: $TAG_COMMIT"
 
           # Verify the commit message format
