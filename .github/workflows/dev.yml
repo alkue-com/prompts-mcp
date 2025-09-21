@@ -10,7 +10,10 @@ permissions: read-all
 
 jobs:
   development:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v5
@@ -25,10 +28,12 @@ jobs:
           uv python install
 
       - name: Run dev.py
+        shell: bash
         run: |
-          ./dev.py all
+          python dev.py all
 
       - name: Start server
+        shell: bash
         run: |
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
