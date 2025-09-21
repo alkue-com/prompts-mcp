@@ -26,12 +26,11 @@ jobs:
       - name: Install .python-version
         run: |
           uv python install
-          uv python update-shell
 
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
-          export PROMPTS_DIR="$(pwd)/tests/test_prompts"
+          export PROMPTS_DIR="$GITHUB_WORKSPACE/tests/test_prompts"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
           sleep 3
@@ -43,7 +42,7 @@ jobs:
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
-          $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
+          $PROMPTS_DIR = "$env:GITHUB_WORKSPACE\tests\test_prompts"
           $env:PROMPTS_DIR = $PROMPTS_DIR
           Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
           Start-Sleep -Seconds 3
@@ -61,4 +60,4 @@ jobs:
       - name: Run dev.py (Windows)
         if: runner.os == 'Windows'
         run: |
-          python dev.py all
+          uv run dev.py all
