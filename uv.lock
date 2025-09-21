@@ -642,7 +642,7 @@ wheels = [
 
 [[package]]
 name = "prompts-mcp"
-version = "1.5.2rc3"
+version = "1.6.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
