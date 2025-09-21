@@ -3,8 +3,6 @@ name: Setup development
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 permissions: read-all
 

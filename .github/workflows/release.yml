@@ -1,0 +1,30 @@
+name: Create release
+
+on:
+  push:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  releasepy:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install .python-version
+        run: |
+          uv python install
+
+      - name: Run release.py
+        run:
+          uv run release.py
