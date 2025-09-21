@@ -168,10 +168,27 @@ def build_uv_publish_command(repository: str = "pypi") -> list[str]:
     return ["uv", "publish"] + opts
 
 
-def main() -> None:
-    """Main entry point for the release script."""
-    prerelease_type = sys.argv[1] if len(sys.argv) > 1 else None
+def parse_arguments() -> tuple[str | None, bool]:
+    """Parse command line arguments.
 
+    Returns:
+        tuple: (prerelease_type, should_publish)
+    """
+    args = sys.argv[1:]
+    prerelease_type = None
+    should_publish = False
+    i = 0
+    while i < len(args):
+        if args[i] == "--publish":
+            should_publish = True
+        elif args[i] in ["alpha", "beta", "rc"]:
+            prerelease_type = args[i]
+        i += 1
+    return prerelease_type, should_publish
+
+
+def validate_release_environment() -> None:
+    """Validate that we're in a proper state for releasing."""
     # Check if we're on main or master branch
     branch = get_current_branch()
     if branch not in ["main", "master"]:
@@ -187,25 +204,29 @@ def main() -> None:
     # Clear dist directory before building
     clear_dist_directory()
 
-    if prerelease_type:
-        print(f"Creating pre-release ({prerelease_type})")
 
-        # Run bump command
-        bump_cmd = [
-            "uv",
-            "run",
-            "cz",
-            "bump",
-            "--prerelease",
-            prerelease_type,
-            "--yes",
-        ]
-        run_command(" ".join(bump_cmd), "Creating pre-release")
+def run_prerelease(prerelease_type: str, should_publish: bool) -> None:
+    """Run prerelease process."""
+    print(f"Creating pre-release ({prerelease_type})")
 
-        # Run build command
-        run_command("uv build", "Building package")
+    # Run bump command
+    bump_cmd = [
+        "uv",
+        "run",
+        "cz",
+        "bump",
+        "--prerelease",
+        prerelease_type,
+        "--yes",
+    ]
+    run_command(" ".join(bump_cmd), "Creating pre-release")
 
-        # Run publish command with testpypi credentials
+    # Run build command
+    run_command("uv build", "Building package")
+
+    # Run publish command with testpypi credentials
+    # (only if --publish flag is set)
+    if should_publish:
         publish_cmd = build_uv_publish_command("testpypi")
         print("Publishing to testpypi...")
         print(f"Running: {' '.join(publish_cmd)}")
@@ -214,14 +235,21 @@ def main() -> None:
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)
     else:
-        # Run bump command
-        bump_cmd = ["uv", "run", "cz", "bump", "--yes"]
-        run_command(" ".join(bump_cmd), "Creating release")
+        print("Skipping publish to testpypi (use --publish to enable)")
 
-        # Run build command
-        run_command("uv build", "Building package")
 
-        # Run publish command with pypi credentials
+def run_release(should_publish: bool) -> None:
+    """Run regular release process."""
+    # Run bump command
+    bump_cmd = ["uv", "run", "cz", "bump", "--yes"]
+    run_command(" ".join(bump_cmd), "Creating release")
+
+    # Run build command
+    run_command("uv build", "Building package")
+
+    # Run publish command with pypi credentials
+    # (only if --publish flag is set)
+    if should_publish:
         publish_cmd = build_uv_publish_command("pypi")
         print("Publishing to PyPI...")
         print(f"Running: {' '.join(publish_cmd)}")
@@ -229,6 +257,18 @@ def main() -> None:
         if result.returncode != 0:
             print(f"Publish failed with exit code {result.returncode}")
             sys.exit(result.returncode)
+    else:
+        print("Skipping publish to PyPI (use --publish to enable)")
+
+
+def main() -> None:
+    """Main entry point for the release script."""
+    prerelease_type, should_publish = parse_arguments()
+    validate_release_environment()
+    if prerelease_type:
+        run_prerelease(prerelease_type, should_publish)
+    else:
+        run_release(should_publish)
 
 
 if __name__ == "__main__":
