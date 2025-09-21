@@ -38,6 +38,14 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
+      - name: Create test commit
+        run: |
+          # Create a dummy commit to test the release process
+          echo "# Test commit for release workflow" >> test_release.md
+          git add test_release.md
+          git commit -m "test: add dummy commit for release testing"
+          echo "✅ Test commit created"
+
       - name: Create rc
         run: |
           # Capture initial state
@@ -160,3 +168,11 @@ jobs:
           fi
 
           echo "✅ Create rc functionality test passed!"
+
+      - name: Cleanup test files
+        run: |
+          # Remove the test file created during the workflow
+          if [ -f "test_release.md" ]; then
+            rm test_release.md
+            echo "✅ Test file cleaned up"
+          fi
