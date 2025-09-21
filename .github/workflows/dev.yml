@@ -30,7 +30,10 @@ jobs:
 
       - name: Start server
         run: |
-          timeout 5s uv run prompts-mcp | tee server.log
+          uv run prompts-mcp > server.log 2>&1 &
+          SERVER_PID=$!
+          sleep 3
+          kill $SERVER_PID
           grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
           grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
           grep -q "INFO:prompts-mcp:Loaded.*prompts from" server.log
