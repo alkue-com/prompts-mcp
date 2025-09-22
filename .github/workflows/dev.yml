@@ -71,12 +71,8 @@ jobs:
           # Create empty log file first
           New-Item -Path $LOG_PATH -ItemType File -Force
 
-          # Start server in background and append to log file
-          $job = Start-Job -ScriptBlock {
-            param($promptsDir, $logPath)
-            $env:PROMPTS_DIR = $promptsDir
-            uv run prompts-mcp >> $logPath 2>&1
-          } -ArgumentList $env:PROMPTS_DIR, $LOG_PATH
+          # Start server in background using Start-Process
+          $process = Start-Process -FilePath "uv" -ArgumentList "run", "prompts-mcp" -RedirectStandardOutput $LOG_PATH -RedirectStandardError $LOG_PATH -WindowStyle Hidden -PassThru
 
           # Wait up to 10 seconds for all required log messages
           $timeout = 10
@@ -86,8 +82,7 @@ jobs:
                 (Select-String -Path $LOG_PATH -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet) -and
                 (Select-String -Path $LOG_PATH -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet)) {
               Write-Host "All required log messages found, stopping server"
-              Stop-Job $job
-              Remove-Job $job
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
               exit 0
             }
             Start-Sleep -Seconds 1
@@ -95,8 +90,7 @@ jobs:
           }
 
           Write-Host "Timeout reached - required log messages not found within 10 seconds"
-          Stop-Job $job
-          Remove-Job $job
+          Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           exit 1
 
       - name: Run dev.py
