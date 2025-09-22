@@ -37,28 +37,56 @@ jobs:
           export PROMPTS_DIR="$(pwd)/tests/test_prompts"
           uv run prompts-mcp > server.log 2>&1 &
           SERVER_PID=$!
-          sleep 5
+
+          # Wait up to 10 seconds for all required log messages
+          timeout=10
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            if grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
+                grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
+                grep -q "INFO:prompts-mcp:Loaded.*prompts from" server.log; then
+              echo "All required log messages found, stopping server"
+              kill $SERVER_PID 2>/dev/null || true
+              exit 0
+            fi
+            sleep 1
+            elapsed=$((elapsed + 1))
+          done
+
+          echo "Timeout reached - required log messages not found within 10 seconds"
           kill $SERVER_PID 2>/dev/null || true
-          grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
-          grep -q "INFO:prompts-mcp:Using prompts directory:" server.log && \
-          grep -q "INFO:prompts-mcp:Loaded.*prompts from" server.log
+          exit 1
 
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
           $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
           $env:PROMPTS_DIR = $PROMPTS_DIR
-          Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
-          Start-Sleep -Seconds 5
-          Stop-Job *
-          Remove-Job *
-          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet
-          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet
-          Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet
+          $job = Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
+
+          # Wait up to 10 seconds for all required log messages
+          $timeout = 10
+          $elapsed = 0
+          while ($elapsed -lt $timeout) {
+            if ((Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet) -and
+                (Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet) -and
+                (Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet)) {
+              Write-Host "All required log messages found, stopping server"
+              Stop-Job $job
+              Remove-Job $job
+              exit 0
+            }
+            Start-Sleep -Seconds 1
+            $elapsed++
+          }
+
+          Write-Host "Timeout reached - required log messages not found within 10 seconds"
+          Stop-Job $job
+          Remove-Job $job
+          exit 1
 
       - name: Run dev.py
-        run:
-          uv run dev.py all
+        run: uv run dev.py all
         env:
           PYTHONIOENCODING: utf-8
 
