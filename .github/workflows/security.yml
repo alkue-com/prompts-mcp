@@ -13,15 +13,36 @@ jobs:
   bandit:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write # bandit-action uploads created results.sarif
+      security-events: write # for uploading SARIF results
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Install uv (macOS & Linux)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+      - name: Install .python-version
+        run: |
+          uv python install
+
       - name: Run Bandit
-        uses: PyCQA/bandit-action@v1
+        run: |
+          uvx "bandit[sarif]" -r . -f sarif -o bandit.sarif \
+            --severity-level medium
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: github.event_name != 'act_test' && !contains(github.actor, 'act')
         with:
-          severity: medium
+          sarif_file: bandit.sarif
+          category: bandit
 
   checkov:
     runs-on: ubuntu-latest
@@ -40,6 +61,7 @@ jobs:
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
+        if: github.event_name != 'act_test' && !contains(github.actor, 'act')
         with:
           sarif_file: checkov.sarif
           category: checkov
