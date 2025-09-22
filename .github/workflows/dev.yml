@@ -35,7 +35,12 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           export PROMPTS_DIR="$(pwd)/tests/test_prompts"
-          uv run prompts-mcp > server.log 2>&1 &
+
+          # Create empty log file first
+          touch server.log
+
+          # Start server in background and append to log file
+          uv run prompts-mcp >> server.log 2>&1 &
           SERVER_PID=$!
 
           # Wait up to 10 seconds for all required log messages
@@ -60,10 +65,18 @@ jobs:
       - name: Start server (Windows)
         if: runner.os == 'Windows'
         run: |
-          $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
-          $env:PROMPTS_DIR = $PROMPTS_DIR
+          $env:PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
           $LOG_PATH = "$(Get-Location)\server.log"
-          $job = Start-Job -ScriptBlock { param($logPath) uv run prompts-mcp > $logPath 2>&1 } -ArgumentList $LOG_PATH
+
+          # Create empty log file first
+          New-Item -Path $LOG_PATH -ItemType File -Force
+
+          # Start server in background and append to log file
+          $job = Start-Job -ScriptBlock {
+            param($promptsDir, $logPath)
+            $env:PROMPTS_DIR = $promptsDir
+            uv run prompts-mcp >> $logPath 2>&1
+          } -ArgumentList $env:PROMPTS_DIR, $LOG_PATH
 
           # Wait up to 10 seconds for all required log messages
           $timeout = 10
