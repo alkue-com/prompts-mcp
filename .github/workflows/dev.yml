@@ -62,15 +62,16 @@ jobs:
         run: |
           $PROMPTS_DIR = "$(Get-Location)\tests\test_prompts"
           $env:PROMPTS_DIR = $PROMPTS_DIR
-          $job = Start-Job -ScriptBlock { uv run prompts-mcp > server.log 2>&1 }
+          $LOG_PATH = "$(Get-Location)\server.log"
+          $job = Start-Job -ScriptBlock { param($logPath) uv run prompts-mcp > $logPath 2>&1 } -ArgumentList $LOG_PATH
 
           # Wait up to 10 seconds for all required log messages
           $timeout = 10
           $elapsed = 0
           while ($elapsed -lt $timeout) {
-            if ((Select-String -Path server.log -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet) -and
-                (Select-String -Path server.log -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet) -and
-                (Select-String -Path server.log -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet)) {
+            if ((Select-String -Path $LOG_PATH -Pattern "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" -Quiet) -and
+                (Select-String -Path $LOG_PATH -Pattern "INFO:prompts-mcp:Using prompts directory:" -Quiet) -and
+                (Select-String -Path $LOG_PATH -Pattern "INFO:prompts-mcp:Loaded.*prompts from" -Quiet)) {
               Write-Host "All required log messages found, stopping server"
               Stop-Job $job
               Remove-Job $job
