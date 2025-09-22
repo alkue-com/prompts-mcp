@@ -31,6 +31,11 @@ jobs:
         run: |
           uv python install
 
+      - name: Run dev.py
+        run: uv run dev.py all
+        env:
+          PYTHONIOENCODING: utf-8
+
       - name: Start server (macOS & Linux)
         if: runner.os != 'Windows'
         run: |
@@ -43,8 +48,8 @@ jobs:
           uv run prompts-mcp >> server.log 2>&1 &
           SERVER_PID=$!
 
-          # Wait up to 10 seconds for all required log messages
-          timeout=10
+          # Wait up to 5 seconds for all required log messages
+          timeout=5
           elapsed=0
           while [ $elapsed -lt $timeout ]; do
             if grep -q "INFO:prompts-mcp:Starting prompts-mcp server with FastMCP" server.log && \
@@ -58,7 +63,7 @@ jobs:
             elapsed=$((elapsed + 1))
           done
 
-          echo "Timeout reached - required log messages not found within 10 seconds"
+          echo "Timeout reached - required log messages not found within 5 seconds"
           echo "Server log contents:"
           cat server.log
           kill $SERVER_PID 2>/dev/null || true
@@ -80,8 +85,8 @@ jobs:
             uv run prompts-mcp 2>&1 | Out-File -FilePath "server.log" -Append
           }
 
-          # Wait up to 10 seconds for all required log messages
-          $timeout = 10
+          # Wait up to 5 seconds for all required log messages
+          $timeout = 5
           $elapsed = 0
           $found = $false
 
@@ -104,7 +109,7 @@ jobs:
           }
 
           if (-not $found) {
-            Write-Host "Timeout reached - required log messages not found within 10 seconds"
+            Write-Host "Timeout reached - required log messages not found within 5 seconds"
             Write-Host "Server log contents:"
             if (Test-Path "server.log") {
               Get-Content "server.log"
@@ -115,11 +120,6 @@ jobs:
             Remove-Job $job -ErrorAction SilentlyContinue
             exit 1
           }
-
-      - name: Run dev.py
-        run: uv run dev.py all
-        env:
-          PYTHONIOENCODING: utf-8
 
       - name: Run pre-commit hooks
         run: |
