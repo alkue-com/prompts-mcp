@@ -59,6 +59,8 @@ jobs:
           done
 
           echo "Timeout reached - required log messages not found within 10 seconds"
+          echo "Server log contents:"
+          cat server.log
           kill $SERVER_PID 2>/dev/null || true
           exit 1
 
@@ -103,6 +105,12 @@ jobs:
 
           if (-not $found) {
             Write-Host "Timeout reached - required log messages not found within 10 seconds"
+            Write-Host "Server log contents:"
+            if (Test-Path "server.log") {
+              Get-Content "server.log"
+            } else {
+              Write-Host "No server.log file found"
+            }
             Stop-Job $job -ErrorAction SilentlyContinue
             Remove-Job $job -ErrorAction SilentlyContinue
             exit 1
