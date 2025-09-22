@@ -13,7 +13,7 @@ jobs:
   bandit:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
+      security-events: write # bandit-action uploads created results.sarif
     steps:
       - name: Checkout
         uses: actions/checkout@v5
