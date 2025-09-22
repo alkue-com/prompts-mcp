@@ -71,8 +71,8 @@ jobs:
           # Create empty log file first
           New-Item -Path $LOG_PATH -ItemType File -Force
 
-          # Start server in background using Start-Process
-          $process = Start-Process -FilePath "uv" -ArgumentList "run", "prompts-mcp" -RedirectStandardOutput $LOG_PATH -RedirectStandardError $LOG_PATH -WindowStyle Hidden -PassThru
+          # Start server in background using cmd for proper redirection
+          $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "uv run prompts-mcp >> `"$LOG_PATH`" 2>&1" -WindowStyle Hidden -PassThru
 
           # Wait up to 10 seconds for all required log messages
           $timeout = 10
