@@ -236,5 +236,5 @@ Use carefully.
             registered_names = [call[0][0]["name"] for call in calls]
 
             assert "foo" in registered_names
-            assert "/python:refactor" in registered_names
-            assert "/deep:nested:bar" in registered_names
+            assert "python:refactor" in registered_names
+            assert "deep:nested:bar" in registered_names

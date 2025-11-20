@@ -83,7 +83,7 @@ class PromptsMCPServer:
             else:
                 # Join all parent parts with :
                 parent_str = ":".join(rel_path.parent.parts)
-                name = f"/{parent_str}:{prompt_file.stem}"
+                name = f"{parent_str}:{prompt_file.stem}"
 
             return load_prompt_file(prompt_file, name)
         except (OSError, ValueError, UnicodeDecodeError) as e:
@@ -119,12 +119,12 @@ class PromptsMCPServer:
         """Create a prompt handler function for the given content."""
 
         async def prompt_handler(
-            arguments: dict[str, Any] | None = None,
+            input: str | None = None,  # noqa: A002
         ) -> str:
             result = content
             # Add input if provided
-            if arguments and "input" in arguments and arguments["input"]:
-                result += f"\n\n{arguments['input']}"
+            if input:
+                result += f"\n\n{input}"
             return result
 
         return prompt_handler

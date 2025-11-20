@@ -341,9 +341,7 @@ class TestRegisterPromptFunction:
 
         # Test the handler function with input arguments
         if handler_func is not None:
-            result = asyncio.run(
-                handler_func({"input": "Additional user input"})
-            )
+            result = asyncio.run(handler_func(input="Additional user input"))
             expected = (
                 "# Test Prompt\n\nThis is a test prompt content.\n\n"
                 "Additional user input"
@@ -351,14 +349,14 @@ class TestRegisterPromptFunction:
             assert result == expected
 
             # Test the handler function without input arguments
-            result_no_input = asyncio.run(handler_func(None))
+            result_no_input = asyncio.run(handler_func(input=None))
             assert (
                 result_no_input
                 == "# Test Prompt\n\nThis is a test prompt content."
             )
 
             # Test the handler function with empty input
-            result_empty_input = asyncio.run(handler_func({"input": ""}))
+            result_empty_input = asyncio.run(handler_func(input=""))
             assert (
                 result_empty_input
                 == "# Test Prompt\n\nThis is a test prompt content."
