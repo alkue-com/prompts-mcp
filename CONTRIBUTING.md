@@ -5,17 +5,9 @@ if not already present.
 
 ## Development
 
-Set the `PROMPTS_DIR` environment variable (macOS & Linux distros):
-
-    export PROMPTS_DIR="/path/to/your/prompts"
-
-On Windows:
-
-    set PROMPTS_DIR=C:\path\to\your\prompts
-
 Run the server:
 
-    uv run prompts-mcp
+    PROMPTS_DIR=tests/test_prompts uv run prompts-mcp
 
 Use `dev.py` for development tasks. Run without arguments for list of all tasks.
 
@@ -24,6 +16,14 @@ To run all the tasks (sync, format, lint, check, test) at once:
     uv run dev.py all
 
 ### Test drive
+
+Set the `PROMPTS_DIR` environment variable (macOS & Linux distros):
+
+    export PROMPTS_DIR="/path/to/your/prompts"
+
+On Windows:
+
+    set PROMPTS_DIR=C:\path\to\your\prompts
 
 Use it in [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 

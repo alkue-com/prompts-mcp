@@ -1,5 +1,10 @@
+---
+arguments:
+    - name: code
+      description: The code to review
+      required: true
+---
+
 # test
 
-Write pytest tests for Python ${code}.
-
-If code is not given, exit by saying "error: code is required".
+Write tests for Python ${code}.
