@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 We use [PEP 440](https://peps.python.org/pep-0440/) version scheme and
 do [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## 1.7.1 (2025-11-20)
+
+### Fix
+
+- **prompts_mcp**: skip invalid argument names in dynamic prompts
+
 ## 1.7.0 (2025-11-20)
 
 ### Feat
