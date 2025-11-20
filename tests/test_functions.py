@@ -323,6 +323,18 @@ This is a simple prompt without any arguments.
         assert "the login function" in result
         assert "$ARGUMENTS" not in result
 
+    def test_find_argument_placeholders_skips_invalid_identifiers(self) -> None:
+        """Test that placeholders with invalid identifiers are ignored."""
+        from prompts_mcp.main import _find_argument_placeholders
+
+        content = "Valid: ${valid_arg}, Invalid: ${1}, ${-invalid}, ${valid_2}"
+        placeholders = _find_argument_placeholders(content)
+
+        assert "valid_arg" in placeholders
+        assert "valid_2" in placeholders
+        assert "1" not in placeholders
+        assert "-invalid" not in placeholders
+
 
 @pytest.mark.unit
 class TestLoadAllPromptsFunction:
@@ -639,6 +651,37 @@ class TestRegisterPromptFunction:
         assert (
             decorator_call[1]["description"] == "A test prompt for unit testing"
         )
+
+    @patch("prompts_mcp.main.logger")
+    def test_create_handler_skips_invalid_arguments(
+        self, mock_logger: Any
+    ) -> None:
+        """Test that _create_prompt_handler skips invalid arguments."""
+        server = create_test_server()
+
+        content = "Content"
+        arguments = [
+            {"name": "valid_arg", "description": "Valid", "required": False},
+            {"name": "1", "description": "Invalid", "required": False},
+            {
+                "name": "invalid-name",
+                "description": "Invalid",
+                "required": False,
+            },
+        ]
+
+        handler = server._create_prompt_handler(content, arguments)  # noqa: SLF001
+
+        # Check signature
+        import inspect
+
+        sig = inspect.signature(handler)
+        assert "valid_arg" in sig.parameters
+        assert "1" not in sig.parameters
+        assert "invalid-name" not in sig.parameters
+
+        # Check warnings
+        assert mock_logger.warning.call_count == 2
 
 
 @pytest.mark.unit

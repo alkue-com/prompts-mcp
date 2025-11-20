@@ -142,6 +142,26 @@ class PromptsMCPServer:
 
         return prompt_handler
 
+    def _create_parameter(
+        self, arg_name: str, arg_desc: str, is_required: bool
+    ) -> Any:
+        """Create an inspect.Parameter for a dynamic argument."""
+        import inspect
+        from typing import Annotated
+
+        if is_required:
+            return inspect.Parameter(
+                arg_name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=Annotated[str, arg_desc],
+            )
+        return inspect.Parameter(
+            arg_name,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            default="",
+            annotation=Annotated[str, arg_desc],
+        )
+
     def _create_dynamic_args_handler(
         self, content: str, arguments: list[dict[str, Any]]
     ) -> Any:
@@ -159,22 +179,19 @@ class PromptsMCPServer:
             arg_desc = arg["description"]
             is_required = arg.get("required", False)
 
+            # Validate argument name is a valid identifier
+            if not arg_name.isidentifier():
+                logger.warning(
+                    "Skipping invalid argument name '%s'. Arguments must "
+                    "be valid Python identifiers (start with "
+                    "letter/underscore, contain only "
+                    "alphanumerics/underscores).",
+                    arg_name,
+                )
+                continue
+
             # Create parameter with annotation
-            if is_required:
-                # Required parameter (no default)
-                param = inspect.Parameter(
-                    arg_name,
-                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                    annotation=Annotated[str, arg_desc],
-                )
-            else:
-                # Optional parameter (with default)
-                param = inspect.Parameter(
-                    arg_name,
-                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                    default="",
-                    annotation=Annotated[str, arg_desc],
-                )
+            param = self._create_parameter(arg_name, arg_desc, is_required)
             params.append(param)
             annotations[arg_name] = Annotated[str, arg_desc]
 
@@ -342,7 +359,8 @@ def _find_argument_placeholders(content: str) -> set[str]:
     import re
 
     # Find ${arg_name} style placeholders
-    placeholders = set(re.findall(r"\$\{(\w+)\}", content))
+    # Only match valid Python identifiers (must start with letter or underscore)
+    placeholders = set(re.findall(r"\$\{([a-zA-Z_]\w*)\}", content))
 
     # Check for $ARGUMENTS placeholder
     if "$ARGUMENTS" in content:
