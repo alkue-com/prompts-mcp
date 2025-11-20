@@ -71,10 +71,21 @@ class PromptsMCPServer:
         """Check if a prompt file should be skipped."""
         return prompt_file.name == "README.md"
 
-    def _load_single_prompt(self, prompt_file: Path) -> dict[str, Any] | None:
+    def _load_single_prompt(
+        self, prompt_file: Path, prompts_dir: Path
+    ) -> dict[str, Any] | None:
         """Load a single prompt file and return its data."""
         try:
-            return load_prompt_file(prompt_file)
+            # Calculate name based on relative path
+            rel_path = prompt_file.relative_to(prompts_dir)
+            if len(rel_path.parts) == 1:
+                name = prompt_file.stem
+            else:
+                # Join all parent parts with :
+                parent_str = ":".join(rel_path.parent.parts)
+                name = f"/{parent_str}:{prompt_file.stem}"
+
+            return load_prompt_file(prompt_file, name)
         except (OSError, ValueError, UnicodeDecodeError) as e:
             logger.error("Error loading prompt file %s: %s", prompt_file, e)
             return None
@@ -88,11 +99,11 @@ class PromptsMCPServer:
         if prompts_dir is None:
             return
 
-        for prompt_file in prompts_dir.glob("*.md"):
+        for prompt_file in prompts_dir.rglob("*.md"):
             if self._should_skip_file(prompt_file):
                 continue
 
-            prompt_data = self._load_single_prompt(prompt_file)
+            prompt_data = self._load_single_prompt(prompt_file, prompts_dir)
             if prompt_data is not None:
                 self.register_prompt(prompt_data)
                 prompt_count += 1
@@ -199,7 +210,9 @@ def _extract_description_from_content(content: str) -> str:
     return description
 
 
-def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
+def load_prompt_file(
+    prompt_path: Path, name: str | None = None
+) -> dict[str, Any]:
     """Load and parse a prompt file."""
     try:
         # Try UTF-8 first, fall back to system default if needed
@@ -216,7 +229,7 @@ def load_prompt_file(prompt_path: Path) -> dict[str, Any]:
     description = _extract_description_from_content(content)
 
     return {
-        "name": prompt_path.stem,
+        "name": name or prompt_path.stem,
         "title": title,
         "description": description,
         "content": content,

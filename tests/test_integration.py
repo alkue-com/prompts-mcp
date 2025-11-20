@@ -202,3 +202,39 @@ Use carefully.
             assert result["title"] == "Large Prompt"
             assert len(result["content"]) > 10000  # Should handle large content
             assert result["content"] == large_content
+
+    def test_nested_prompt_loading(self) -> None:
+        """Test loading of nested prompts with colon separator."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            # Create root prompt
+            (prompts_dir / "foo.md").write_text("Foo content")
+
+            # Create nested prompt
+            nested_dir = prompts_dir / "python"
+            nested_dir.mkdir()
+            (nested_dir / "refactor.md").write_text("Refactor content")
+
+            # Create deeply nested prompt
+            deep_nested_dir = prompts_dir / "deep" / "nested"
+            deep_nested_dir.mkdir(parents=True)
+            (deep_nested_dir / "bar.md").write_text("Bar content")
+
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
+
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
+
+            # Test loading all prompts
+            server.load_all_prompts()
+
+            # Verify the registered prompts
+            calls = server.register_prompt.call_args_list
+            registered_names = [call[0][0]["name"] for call in calls]
+
+            assert "foo" in registered_names
+            assert "/python:refactor" in registered_names
+            assert "/deep:nested:bar" in registered_names
