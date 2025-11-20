@@ -115,28 +115,93 @@ class PromptsMCPServer:
         if self.app is None:
             raise RuntimeError("FastMCP app is not initialized")
 
-    def _create_prompt_handler(self, content: str) -> Any:
-        """Create a prompt handler function for the given content."""
+    def _create_prompt_handler(
+        self, content: str, arguments: list[dict[str, Any]]
+    ) -> Any:
+        """Create a prompt handler for content and arguments."""
+        # Strip YAML frontmatter from content for the actual prompt
+        _, content_without_frontmatter = _parse_yaml_frontmatter(content)
+
+        # Create handler based on whether arguments are present
+        if not arguments:
+            return self._create_simple_handler(content_without_frontmatter)
+        return self._create_dynamic_args_handler(
+            content_without_frontmatter, arguments
+        )
+
+    def _create_simple_handler(self, content: str) -> Any:
+        """Create a simple handler without arguments."""
 
         async def prompt_handler(
             input: str | None = None,  # noqa: A002
         ) -> str:
             result = content
-            # Add input if provided
             if input:
                 result += f"\n\n{input}"
             return result
 
         return prompt_handler
 
+    def _create_dynamic_args_handler(
+        self, content: str, arguments: list[dict[str, Any]]
+    ) -> Any:
+        """Create a handler with dynamic argument parameters."""
+        import inspect
+        from typing import Annotated
+
+        # Create parameter list for the function signature
+        params = []
+        annotations = {}
+
+        # Add each argument as a parameter
+        for arg in arguments:
+            arg_name = arg["name"]
+            arg_desc = arg["description"]
+            is_required = arg.get("required", False)
+
+            # Create parameter with annotation
+            if is_required:
+                # Required parameter (no default)
+                param = inspect.Parameter(
+                    arg_name,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=Annotated[str, arg_desc],
+                )
+            else:
+                # Optional parameter (with default)
+                param = inspect.Parameter(
+                    arg_name,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    default="",
+                    annotation=Annotated[str, arg_desc],
+                )
+            params.append(param)
+            annotations[arg_name] = Annotated[str, arg_desc]
+
+        # Create the handler function
+        async def handler(**kwargs: str) -> str:  # noqa: ANN401
+            result = _substitute_arguments(content, kwargs)
+            if "input" in kwargs and kwargs["input"]:
+                result += f"\n\n{kwargs['input']}"
+            return result
+
+        # Update the function signature and annotations
+        handler.__signature__ = inspect.Signature(params)  # type: ignore[attr-defined]
+        handler.__annotations__ = annotations
+
+        return handler
+
     def register_prompt(self, prompt_data: dict[str, Any]) -> None:
         """Register an individual prompt with FastMCP."""
         prompt_name = prompt_data["name"]
         prompt_content = prompt_data["content"]
         prompt_description = prompt_data["description"]
+        prompt_arguments = prompt_data.get("arguments", [])
 
         self._validate_app_initialization()
-        prompt_handler = self._create_prompt_handler(prompt_content)
+        prompt_handler = self._create_prompt_handler(
+            prompt_content, prompt_arguments
+        )
 
         # Register the prompt with FastMCP
         if self.app is None:
@@ -210,6 +275,107 @@ def _extract_description_from_content(content: str) -> str:
     return description
 
 
+def _parse_yaml_frontmatter(content: str) -> tuple[dict[str, Any], str]:
+    """Parse YAML frontmatter from content.
+
+    Returns:
+        Tuple of (frontmatter_dict, content_without_frontmatter)
+    """
+    import re
+
+    # Check if content starts with YAML frontmatter (---)
+    if not content.startswith("---"):
+        return {}, content
+
+    # Find the closing ---
+    match = re.match(r"^---\n(.*?)\n---\n(.*)$", content, re.DOTALL)
+    if not match:
+        return {}, content
+
+    yaml_content = match.group(1)
+    remaining_content = match.group(2)
+
+    try:
+        import yaml
+
+        frontmatter = yaml.safe_load(yaml_content)
+        return frontmatter or {}, remaining_content
+    except (yaml.YAMLError, ImportError):
+        # If YAML parsing fails, return empty dict and original content
+        return {}, content
+
+
+def _extract_arguments_from_frontmatter(
+    frontmatter: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Extract argument definitions from YAML frontmatter.
+
+    Returns:
+        List of argument definitions with name, description, and required fields
+    """
+    if "arguments" not in frontmatter:
+        return []
+
+    arguments = frontmatter["arguments"]
+    if not isinstance(arguments, list):
+        return []
+
+    return [
+        {
+            "name": arg["name"],
+            "description": arg.get("description", ""),
+            "required": arg.get("required", False),
+        }
+        for arg in arguments
+        if isinstance(arg, dict) and "name" in arg
+    ]
+
+
+def _find_argument_placeholders(content: str) -> set[str]:
+    """Find all argument placeholders in content.
+
+    Supports both ${arg_name} and $ARGUMENTS syntax.
+
+    Returns:
+        Set of argument names found in the content
+    """
+    import re
+
+    # Find ${arg_name} style placeholders
+    placeholders = set(re.findall(r"\$\{(\w+)\}", content))
+
+    # Check for $ARGUMENTS placeholder
+    if "$ARGUMENTS" in content:
+        placeholders.add("ARGUMENTS")
+
+    return placeholders
+
+
+def _substitute_arguments(content: str, arguments: dict[str, str]) -> str:
+    """Substitute argument placeholders with actual values.
+
+    Args:
+        content: The prompt content with placeholders
+        arguments: Dictionary of argument name to value mappings
+
+    Returns:
+        Content with placeholders replaced by actual values
+    """
+
+    result = content
+
+    # Replace ${arg_name} style placeholders
+    for arg_name, arg_value in arguments.items():
+        placeholder = f"${{{arg_name}}}"
+        result = result.replace(placeholder, arg_value)
+
+    # Handle $ARGUMENTS placeholder (backward compatibility)
+    if "ARGUMENTS" in arguments:
+        result = result.replace("$ARGUMENTS", arguments["ARGUMENTS"])
+
+    return result
+
+
 def load_prompt_file(
     prompt_path: Path, name: str | None = None
 ) -> dict[str, Any]:
@@ -225,14 +391,33 @@ def load_prompt_file(
             # Last resort: read as bytes and decode with errors='replace'
             content = prompt_path.read_bytes().decode("utf-8", errors="replace")
 
+    # Parse YAML frontmatter if present
+    frontmatter, content_without_frontmatter = _parse_yaml_frontmatter(content)
+
+    # Extract arguments from frontmatter
+    arguments = _extract_arguments_from_frontmatter(frontmatter)
+
+    # If no arguments defined in frontmatter, infer from placeholders
+    if not arguments:
+        placeholders = _find_argument_placeholders(content_without_frontmatter)
+        arguments = [
+            {
+                "name": placeholder,
+                "description": f"Value for {placeholder}",
+                "required": False,
+            }
+            for placeholder in sorted(placeholders)
+        ]
+
     title = _extract_title_from_filename(prompt_path)
-    description = _extract_description_from_content(content)
+    description = _extract_description_from_content(content_without_frontmatter)
 
     return {
         "name": name or prompt_path.stem,
         "title": title,
         "description": description,
-        "content": content,
+        "content": content,  # Keep original content with frontmatter
+        "arguments": arguments,
     }
 
 

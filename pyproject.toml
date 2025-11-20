@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["mcp>=1.14.1"]
+dependencies = ["mcp>=1.14.1", "PyYAML>=6.0"]
 
 [dependency-groups]
 dev = [
@@ -26,6 +26,7 @@ dev = [
     "pytest-mock",
     "pytest-modern",
     "ruff",
+    "types-pyyaml",
 ]
 git = ["commitizen", "pre-commit"]
 

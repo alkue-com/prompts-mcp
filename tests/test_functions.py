@@ -118,6 +118,213 @@ Just a simple prompt for testing purposes.
 
 
 @pytest.mark.unit
+class TestNestedPromptLoading:
+    """Test cases for nested prompt loading."""
+
+    def test_load_nested_prompt_python_test(self) -> None:
+        """Test loading the nested python:test prompt."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            # Create nested directory structure
+            python_dir = prompts_dir / "python"
+            python_dir.mkdir()
+
+            # Create the test.md file
+            test_file = python_dir / "test.md"
+            test_file.write_text("""# test
+
+Write Python unit test for $ARGUMENTS.
+""")
+
+            # Load the prompt file
+            result = load_prompt_file(test_file)
+
+            # Verify the result
+            assert result["name"] == "test"
+            assert result["title"] == "Test"
+            assert "Write Python unit test for $ARGUMENTS" in result["content"]
+            assert result["content"].startswith("# test")
+
+    def test_load_all_nested_prompts(self) -> None:
+        """Test loading all prompts including nested ones."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            # Create root prompt
+            (prompts_dir / "root_prompt.md").write_text(
+                "# Root Prompt\n\nRoot content."
+            )
+
+            # Create nested prompt
+            python_dir = prompts_dir / "python"
+            python_dir.mkdir()
+            (python_dir / "test.md").write_text(
+                "# test\n\nWrite Python unit test for $ARGUMENTS."
+            )
+
+            # Create test server instance
+            server = create_test_server(prompts_dir=prompts_dir)
+
+            # Mock the register_prompt method
+            server.register_prompt = MagicMock()
+
+            # Load all prompts
+            server.load_all_prompts()
+
+            # Verify that both prompts were registered
+            assert server.register_prompt.call_count == 2
+
+            # Verify the registered prompts
+            calls = server.register_prompt.call_args_list
+            registered_names = [call[0][0]["name"] for call in calls]
+
+            assert "root_prompt" in registered_names
+            assert "python:test" in registered_names
+
+
+@pytest.mark.unit
+class TestPromptArguments:
+    """Test cases for prompt arguments functionality."""
+
+    def test_parse_yaml_frontmatter_with_arguments(self) -> None:
+        """Test parsing YAML frontmatter with argument definitions."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "code_review.md"
+            prompt_file.write_text("""---
+arguments:
+    - name: code
+      description: The code to review
+      required: true
+    - name: language
+      description: Programming language
+      required: false
+---
+
+# Code Review
+
+Please review this ${language} code:
+
+${code}
+""")
+
+            result = load_prompt_file(prompt_file)
+
+            assert result["name"] == "code_review"
+            assert "arguments" in result
+            assert len(result["arguments"]) == 2
+
+            # Check first argument
+            assert result["arguments"][0]["name"] == "code"
+            assert result["arguments"][0]["description"] == "The code to review"
+            assert result["arguments"][0]["required"] is True
+
+            # Check second argument
+            assert result["arguments"][1]["name"] == "language"
+            assert (
+                result["arguments"][1]["description"] == "Programming language"
+            )
+            assert result["arguments"][1]["required"] is False
+
+    def test_infer_arguments_from_placeholders(self) -> None:
+        """Test inferring arguments from ${placeholder} syntax."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "sql_query.md"
+            prompt_file.write_text("""# Generate SQL Query
+
+Generate a SQL query for ${database_type} to ${action}.
+""")
+
+            result = load_prompt_file(prompt_file)
+
+            assert result["name"] == "sql_query"
+            assert "arguments" in result
+            assert len(result["arguments"]) == 2
+
+            # Arguments should be sorted alphabetically
+            assert result["arguments"][0]["name"] == "action"
+            assert result["arguments"][1]["name"] == "database_type"
+
+            # Inferred arguments should not be required
+            assert result["arguments"][0]["required"] is False
+            assert result["arguments"][1]["required"] is False
+
+    def test_backward_compatibility_with_arguments_placeholder(self) -> None:
+        """Test backward compatibility with $ARGUMENTS placeholder."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "test.md"
+            prompt_file.write_text("""# test
+
+Write Python unit test for $ARGUMENTS.
+""")
+
+            result = load_prompt_file(prompt_file)
+
+            assert result["name"] == "test"
+            assert "arguments" in result
+            assert len(result["arguments"]) == 1
+            assert result["arguments"][0]["name"] == "ARGUMENTS"
+
+    def test_no_arguments_in_prompt(self) -> None:
+        """Test prompts without any arguments."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            prompts_dir = Path(temp_dir) / "prompts"
+            prompts_dir.mkdir()
+
+            prompt_file = prompts_dir / "simple.md"
+            prompt_file.write_text("""# Simple Prompt
+
+This is a simple prompt without any arguments.
+""")
+
+            result = load_prompt_file(prompt_file)
+
+            assert result["name"] == "simple"
+            assert "arguments" in result
+            assert len(result["arguments"]) == 0
+
+    def test_argument_substitution(self) -> None:
+        """Test that arguments are properly substituted in content."""
+        from prompts_mcp.main import _substitute_arguments
+
+        content = "Review this ${language} code:\n\n${code}"
+        arguments = {
+            "language": "Python",
+            "code": "def hello():\n    print('world')",
+        }
+
+        result = _substitute_arguments(content, arguments)
+
+        assert "Python" in result
+        assert "def hello():" in result
+        assert "${language}" not in result
+        assert "${code}" not in result
+
+    def test_argument_substitution_with_arguments_placeholder(self) -> None:
+        """Test substitution of $ARGUMENTS placeholder."""
+        from prompts_mcp.main import _substitute_arguments
+
+        content = "Write unit test for $ARGUMENTS."
+        arguments = {"ARGUMENTS": "the login function"}
+
+        result = _substitute_arguments(content, arguments)
+
+        assert "the login function" in result
+        assert "$ARGUMENTS" not in result
+
+
+@pytest.mark.unit
 class TestLoadAllPromptsFunction:
     """Test cases for the load_all_prompts method."""
 
